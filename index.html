@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>อีซูซุสหะภัณฑ์ เกมส์จับคู่</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;800;900&display=swap" rel="stylesheet">
     
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
     <style>
         :root {
             --isuzu-red: #ED1A3B; --isuzu-red-hover: #c4132f;
@@ -16,18 +13,26 @@
             --isuzu-light: #f4f4f4; --isuzu-white: #ffffff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Prompt', sans-serif; }
-        
-        /* 🌟 1. ล็อคขนาดจอและป้องกันการเลื่อนหลุด (Letterbox) */
+        /* 🌟 1. ปรับแต่งส่วน Reset และเพิ่ม touch-action */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+            font-family: 'Prompt', sans-serif; 
+            touch-action: none; /* ป้องกันการเผลอเลื่อนจอหรือซูม */
+        }
+
+        /* 🌟 2. ล็อคขนาดจอและป้องกันการเลื่อนหลุด */
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000000;
+            background-color: var(--isuzu-darker);
         }
 
+        /* 🌟 3. ล็อค body ให้ติดขอบจอจริงๆ หลีกเลี่ยงปัญหา 100vh และรอยบากมือถือ */
         body { 
-            margin: 0; 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
             display: flex; 
@@ -39,13 +44,13 @@
             padding-right: env(safe-area-inset-right);
         }
         
-        /* 🌟 ตีกรอบเกมส์ให้มีขนาดสูงสุดคงที่ */
+        /* 🌟 4. ตีกรอบเกมส์ให้มีขนาดสูงสุดคงที่ (Letterboxing) */
         #game-container { 
             position: relative; 
             width: 100%; 
             height: 100%; 
-            max-width: 500px; 
-            max-height: 850px; 
+            max-width: 500px;  /* ขนาดความกว้างสูงสุดให้ดูเป็นสัดส่วนมือถือ */
+            max-height: 850px; /* ขนาดความสูงสุด ป้องกันจอคอมหรือแท็บเล็ตดึงภาพยาวเกิน */
             background: linear-gradient(135deg, #ABDCFF 10%, #0396FF 100%); 
             box-shadow: 0 0 30px rgba(0,0,0,0.8); 
             display: flex; 
@@ -56,19 +61,36 @@
 
         /* HUD */
         #hud-container { width: 100%; background: rgba(255, 255, 255, 0.95); border-bottom: 4px solid var(--isuzu-red); display: none; flex-direction: column; flex: 0 0 auto; position: relative; z-index: 5;}
-        .hud-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; }
+        .hud-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
         .hud-item { display: flex; flex-direction: column; flex: 1; }
         .hud-item.left { align-items: flex-start; } .hud-item.center { align-items: center; } .hud-item.right { align-items: flex-end; }
-        .label { font-size: 0.85rem; font-weight: 600; color: #666; margin-bottom: -2px; }
-        .val { font-size: 1.2rem; font-weight: 800; color: var(--isuzu-darker); font-variant-numeric: tabular-nums; }
-        .val.highlight { color: var(--isuzu-red); font-size: 1.6rem; }
-        #btn-mute { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; z-index: 10; }
+        .label { font-size: 0.75rem; font-weight: 600; color: #666; margin-bottom: -4px; }
+        .val { font-size: 1.1rem; font-weight: 800; color: var(--isuzu-darker); font-variant-numeric: tabular-nums; }
+        .val.highlight { color: var(--isuzu-red); font-size: 1.4rem; }
+        #btn-mute { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; z-index: 10; }
         #memorize-bar-container { width: 100%; height: 5px; background: rgba(0,0,0,0.2); display: none; }
         #memorize-bar { height: 100%; background: var(--isuzu-red); width: 100%; transition: width 0.1s linear; }
 
-        /* Canvas Wrapper */
+        /* Canvas Wrapper & Extra UI */
         #canvas-wrapper { flex: 1 1 auto; position: relative; width: 100%; overflow: hidden; }
         canvas { display: block; width: 100%; height: 100%; }
+        
+        #btn-peek {
+            position: absolute; bottom: 20px; right: 20px;
+            background: #FFD700; color: #111; font-weight: 800;
+            border: 2px solid #fff; border-radius: 50%;
+            width: 60px; height: 60px; font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none;
+            justify-content: center; align-items: center; cursor: pointer;
+            z-index: 15; animation: pulseBanner 2s infinite;
+        }
+        #btn-peek .badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--isuzu-red); color: white;
+            border-radius: 50%; width: 24px; height: 24px;
+            font-size: 0.8rem; display: flex; justify-content: center; align-items: center;
+            border: 2px solid #fff;
+        }
 
         /* Overlays & Modals */
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; justify-content: center; align-items: center; z-index: 20; }
@@ -86,8 +108,8 @@
         .stats-text { font-size: 1.1rem; color: var(--isuzu-dark); margin-bottom: 5px; font-weight: 600; }
         .stats-highlight { color: var(--isuzu-red); font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 
-        input[type="text"], input[type="tel"] { width: 100%; padding: 12px 15px; margin: 5px 0 15px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; font-family: 'Prompt', sans-serif; }
-        input[type="text"]:focus, input[type="tel"]:focus { border-color: var(--isuzu-red); }
+        input[type="text"] { width: 100%; padding: 12px 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; text-align: center; outline: none; font-family: 'Prompt', sans-serif; }
+        input[type="text"]:focus { border-color: var(--isuzu-red); }
 
         .btn { background-color: var(--isuzu-red); color: var(--isuzu-white); border: none; padding: 12px 20px; font-size: 1rem; font-weight: 600; border-radius: 10px; cursor: pointer; margin: 6px 0; width: 100%; box-shadow: 0 4px 10px rgba(237, 26, 59, 0.3); transition: all 0.2s ease; }
         .btn:active { transform: scale(0.95); }
@@ -99,22 +121,15 @@
         .rule-list { text-align: left; font-size: 0.9rem; color: #444; margin-bottom: 20px; padding-left: 10px; }
         .rule-list li { margin-bottom: 10px; } .rule-list strong { color: var(--isuzu-red); }
 
-        /* Leaderboard Styles */
-        .leaderboard-box { background: #f9f9f9; border-radius: 10px; padding: 10px; margin-bottom: 15px; text-align: left; border: 1px solid #eee; }
-        .leaderboard-title { font-size: 1rem; font-weight: 800; color: var(--isuzu-dark); margin-bottom: 10px; text-align: center; border-bottom: 2px solid var(--isuzu-red); padding-bottom: 5px; display: inline-block; width: 100%; }
-        .leaderboard-list { list-style: none; font-size: 0.9rem; color: #333; max-height: 120px; overflow-y: auto; }
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #ccc; }
-        .leaderboard-item:last-child { border-bottom: none; }
-        .rank-1 { color: #D4AF37; font-weight: bold; } .rank-2 { color: #C0C0C0; font-weight: bold; } .rank-3 { color: #CD7F32; font-weight: bold; }
-
-        /* Form & PDPA */
-        #top5-form { display: none; background: #fff3f4; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #f5c6cb; }
-        .pdpa-text { font-size: 0.75rem; color: #888; line-height: 1.3; margin-top: -5px; margin-bottom: 10px; text-align: center; }
+        /* Mystery Box Styles */
+        .mystery-box-container { cursor: pointer; display: inline-block; animation: floatBox 2s infinite ease-in-out; margin-bottom: 20px; }
+        .mystery-box-img { width: 150px; height: 150px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
+        @keyframes floatBox { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .reward-text { font-size: 1.3rem; font-weight: 800; color: var(--isuzu-red); margin-top: 15px; display: none; }
 
         .promo-highlight { background: var(--isuzu-red); color: white; padding: 6px 20px; border-radius: 25px; font-size: 1rem; font-weight: 800; display: inline-block; margin: 5px 0 15px 0; animation: pulseBanner 2s infinite; }
         @keyframes pulseBanner { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* 🌟 เปลี่ยน toast ให้อยู่ในตำแหน่ง absolute เพื่อให้อยู่ในกรอบเสมอ */
         #toast { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(0, 0, 0, 0.85); color: white; padding: 12px 24px; border-radius: 30px; font-size: 0.95rem; font-weight: 600; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 100; white-space: nowrap; }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
@@ -124,9 +139,13 @@
 <div id="game-container">
     <div id="hud-container">
         <div class="hud-row">
-            <div class="hud-item left"><span class="label">ผู้เล่น</span><span class="val" id="hud-name">Player</span></div>
-            <div class="hud-item center"><span class="label">เวลา</span><span class="val highlight" id="hud-time">0:00.000</span></div>
+            <div class="hud-item left"><span class="label">ผู้เล่น</span><span class="val" id="hud-name" style="font-size: 0.9rem;">Player</span></div>
+            <div class="hud-item center"><span class="label">คะแนน</span><span class="val highlight" id="hud-score">0</span></div>
             <div class="hud-item right" style="padding-right: 30px;"><span class="label">ระดับ</span><span class="val">Lv.<span id="hud-level">1</span>/5</span></div>
+        </div>
+        <div class="hud-row" style="padding-top: 0; border-top: 1px dashed #eee; margin-top: -5px;">
+            <div class="hud-item left"><span class="label">โอกาส (ผิดได้ 2 ครั้ง)</span><span class="val" id="hud-lives" style="font-size: 1.2rem;">❤️❤️❤️</span></div>
+            <div class="hud-item right"><span class="label">Combo</span><span class="val" id="hud-combo" style="color: #FF8C00;">x1</span></div>
         </div>
         <button id="btn-mute" onclick="toggleMute()">🔊</button>
         <div id="memorize-bar-container"><div id="memorize-bar"></div></div>
@@ -134,20 +153,19 @@
 
     <div id="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
+        
+        <div id="btn-peek" onclick="usePeek()">
+            👁️<div class="badge" id="peek-badge">0</div>
+        </div>
+
         <div id="ui-layer" class="overlay">
             
             <div id="screen-name" class="screen">
                 <div class="modal modal-scrollable">
                     <h1 class="logo-title"><span>อีซูซุ</span><br>สหะภัณฑ์ เกมส์จับคู่</h1>
+                    <p class="subtitle">ทดสอบความจำและความไวของคุณ!</p>
                     
-                    <div class="leaderboard-box">
-                        <div class="leaderboard-title">🏆 Top 5 ผู้ทำเวลาดีที่สุด</div>
-                        <ul class="leaderboard-list" id="leaderboard-ui">
-                            <li style="text-align:center; color:#888;">กำลังโหลดข้อมูล...</li>
-                        </ul>
-                    </div>
-
-                    <input type="text" id="player-name-input" placeholder="ชื่อของคุณ (ไม่เกิน 20 ตัวอักษร)" maxlength="20" autocomplete="off">
+                    <input type="text" id="player-name-input" placeholder="กรอกชื่อของคุณ (ไม่เกิน 20 ตัวอักษร)" maxlength="20" autocomplete="off">
                     <button class="btn" onclick="saveNameAndStart()">เริ่มเกม (PLAY)</button>
                     <button class="btn btn-secondary" onclick="showScreen('screen-howto')">กติกาและวิธีเล่น</button>
                 </div>
@@ -157,95 +175,70 @@
                 <div class="modal modal-scrollable">
                     <h2 class="logo-title" style="font-size: 1.5rem; margin-bottom: 15px;">กติกาและวิธีเล่น</h2>
                     <ul class="rule-list">
-                        <li><strong>1. จดจำ:</strong> เริ่มด่านไพ่จะหงาย 2 วิ ให้จำภาพต่างๆ</li>
+                        <li><strong>1. จดจำ:</strong> ก่อนเริ่มด่านไพ่จะหงาย 2 วิ ให้จำภาพต่างๆ</li>
                         <li><strong>2. จับคู่:</strong> เปิดไพ่ทีละ 2 ใบเพื่อจับคู่ภาพที่เหมือนกัน</li>
-                        <li><strong>3. วัดความเร็ว:</strong> จับเวลา 5 ด่าน ใครทำเวลาน้อยสุดติดอันดับ Top 5!</li>
+                        <li><strong>3. โอกาสจำกัด:</strong> พลาดได้ <strong style="color:red;">2 ครั้ง</strong> (มี 3 หัวใจ) หัวใจหมด = เกมโอเวอร์</li>
+                        <li><strong>4. COMBO:</strong> จับคู่ถูกติดต่อกัน คะแนนจะยิ่งคูณเยอะขึ้น!</li>
+                        <li><strong>5. กล่องสุ่ม:</strong> ผ่านด่านรับสุ่มไอเทมตัวช่วยหรือหัวใจฟรี</li>
                     </ul>
                     <button class="btn" onclick="showScreen('screen-name')">กลับ (BACK)</button>
                 </div>
             </div>
 
+            <div id="screen-mystery-box" class="screen hidden">
+                <div class="modal">
+                    <h2 class="logo-title" style="font-size: 1.4rem; margin-bottom: 5px; color: var(--isuzu-red);">🎁 Mystery Box!</h2>
+                    <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">แตะที่กล่องเพื่อสุ่มรับรางวัลสำหรับด่านถัดไป</p>
+                    
+                    <div class="mystery-box-container" id="mystery-box-btn" onclick="openMysteryBox()">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3667/3667863.png" class="mystery-box-img" alt="Mystery Box">
+                    </div>
+                    
+                    <h3 id="reward-text" class="reward-text">ได้รับรางวัล!</h3>
+                    
+                    <button id="btn-next-level" class="btn btn-success" style="display:none; margin-top: 15px;" onclick="continueToNextLevel()">ลุยด่านถัดไป! (NEXT)</button>
+                </div>
+            </div>
+
             <div id="screen-win" class="screen hidden">
                 <div class="modal modal-scrollable">
-                    <h1 class="logo-title" style="margin-bottom: 5px;"><span style="color: #4CAF50;">YOU WIN!</span></h1>
+                    <h1 class="logo-title" style="margin-bottom: 5px;"><span style="color: #4CAF50;">MISSION COMPLETE!</span></h1>
                     <div class="promo-highlight">เข้าศูนย์ "อีซูซุสหะภัณฑ์ไม่ต้องรอนาน"</div>
-                    <div class="stats-text" style="margin-bottom: 15px;">เวลาที่ทำได้: <br><span class="stats-highlight" id="win-time" style="font-size: 2rem;">0:00.000</span></div>
+                    <div class="stats-text" style="margin-bottom: 5px;">คะแนนรวมของคุณ: <br><span class="stats-highlight" id="win-score" style="font-size: 2.5rem;">0</span></div>
 
-                    <div id="top5-form">
-                        <h3 style="color: var(--isuzu-red); font-size: 1.1rem; margin-bottom: 5px;">🎉 ยินดีด้วย! คุณติดอันดับ Top 5</h3>
-                        <p style="font-size: 0.85rem; margin-bottom: 10px;">กรุณากรอกเบอร์โทรศัพท์เพื่อบันทึกสถิติและรับสิทธิ์ลุ้นรางวัล</p>
-                        <input type="tel" id="player-phone-input" placeholder="เบอร์โทรศัพท์ 10 หลัก" maxlength="10">
-                        <p class="pdpa-text">*ข้อมูลของท่านจะถูกเก็บเป็นความลับและใช้สำหรับติดต่อมอบรางวัลโดยอีซูซุสหะภัณฑ์เท่านั้น</p>
-                        <button class="btn" onclick="submitTop5Score()" id="btn-submit-score">บันทึกคะแนนเพื่อลุ้นรางวัล</button>
-                    </div>
-
-                    <div id="end-game-actions">
-                        <button class="btn btn-success" onclick="saveScoreImage()">บันทึกรูปภาพเพื่อแชร์</button>
+                    <div id="end-game-actions" style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="saveScoreImage()">บันทึกรูปภาพสถิติ</button>
                         <button class="btn btn-secondary" onclick="copyReviewText()">คัดลอกข้อความรีวิว</button>
                         <button class="btn btn-secondary" onclick="resetFullGame()" style="margin-top: 5px;">เล่นอีกครั้ง</button>
                     </div>
                 </div>
             </div>
+
+            <div id="screen-gameover" class="screen hidden">
+                <div class="modal">
+                    <h1 class="logo-title" style="margin-bottom: 5px;"><span style="color: var(--isuzu-red);">GAME OVER</span></h1>
+                    <p style="color: #666; margin-bottom: 15px;">คุณใช้โอกาส (หัวใจ) หมดแล้ว!</p>
+                    <div class="stats-text" style="margin-bottom: 15px;">คะแนนที่ทำได้: <br><span class="stats-highlight" id="lose-score" style="font-size: 2.2rem;">0</span></div>
+
+                    <button class="btn btn-success" onclick="saveScoreImage()">บันทึกรูปภาพสถิติ</button>
+                    <button class="btn" onclick="resetFullGame()">ลองใหม่อีกครั้ง</button>
+                </div>
+            </div>
+            
         </div>
     </div>
     <div id="toast">ข้อความ</div>
 </div>
 
 <script>
-    // =========================================================================
-    // 1. ตั้งค่า Firebase (ระบบฐานข้อมูล)
-    // =========================================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyAk_k2ALBMQkzxD7T5lZYkGnN1ZvjAlhCc",
-        authDomain: "isuzu-match-card-game.firebaseapp.com",
-        databaseURL: "https://isuzu-match-card-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "isuzu-match-card-game",
-        storageBucket: "isuzu-match-card-game.firebasestorage.app",
-        messagingSenderId: "220923715809",
-        appId: "1:220923715809:web:46a07d7ca13a2809d857a0",
-        measurementId: "G-QLVZHR231N"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    
-    let topScoresList = [];
-    let isScoreSubmitted = false;
+    // ==========================================
+    // ตัวแปรสำคัญสำหรับ Canvas และ State
+    // ==========================================
+    let finalImageDataUrl = ""; 
+    let logicalWidth = 0;
+    let logicalHeight = 0;
 
-    function fetchLeaderboard() {
-        const leaderboardRef = db.ref('leaderboard').orderByChild('timeMs').limitToFirst(5);
-        leaderboardRef.on('value', (snapshot) => {
-            topScoresList = [];
-            snapshot.forEach((childSnapshot) => {
-                topScoresList.push(childSnapshot.val());
-            });
-            updateLeaderboardUI();
-        });
-    }
-
-    function updateLeaderboardUI() {
-        const listEl = document.getElementById('leaderboard-ui');
-        listEl.innerHTML = '';
-        if (topScoresList.length === 0) {
-            listEl.innerHTML = '<li style="text-align:center; color:#888;">ยังไม่มีผู้ทำสถิติ เป็นคนแรกเลย!</li>';
-            return;
-        }
-        
-        topScoresList.forEach((scoreObj, index) => {
-            let rankClass = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : (index === 2 ? 'rank-3' : ''));
-            let medal = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `${index+1}.`));
-            let li = document.createElement('li');
-            li.className = 'leaderboard-item';
-            li.innerHTML = `<span class="${rankClass}">${medal} ${scoreObj.name}</span> <span>${scoreObj.timeFormatted}</span>`;
-            listEl.appendChild(li);
-        });
-    }
-
-    fetchLeaderboard();
-
-    // =========================================================================
-    // 2. ตั้งค่ารูปภาพ
-    // =========================================================================
+    // รูปภาพหน้าไพ่
     const imgData = { type1: "1.jpg", type2: "2.jpg", type3: "3.jpg", type4: "4.jpg", cardBack: "5.jpg" };
     const images = { type1: new Image(), type2: new Image(), type3: new Image(), type4: new Image(), cardBack: new Image() };
     images.type1.src = imgData.type1; images.type2.src = imgData.type2; images.type3.src = imgData.type3; images.type4.src = imgData.type4; images.cardBack.src = imgData.cardBack;
@@ -259,7 +252,14 @@
         osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
-    function sfxFlip() { playTone(400, 'triangle', 0.1, 0.05); } function sfxMatch() { playTone(523.25, 'sine', 0.1, 0.1); setTimeout(() => playTone(783.99, 'sine', 0.2, 0.1), 100); } function sfxMismatch() { playTone(150, 'sawtooth', 0.3, 0.1); } function sfxWin() { const notes = [261.63, 329.63, 392.00, 523.25]; notes.forEach((n, i) => setTimeout(() => playTone(n, 'square', 0.15, 0.1), i * 150)); }
+    function sfxFlip() { playTone(400, 'triangle', 0.1, 0.05); } 
+    function sfxMatch(combo) { 
+        playTone(523.25 + (combo*50), 'sine', 0.1, 0.1); 
+        setTimeout(() => playTone(783.99 + (combo*50), 'sine', 0.2, 0.1), 100); 
+    } 
+    function sfxMismatch() { playTone(150, 'sawtooth', 0.3, 0.1); } 
+    function sfxWin() { const notes = [261.63, 329.63, 392.00, 523.25]; notes.forEach((n, i) => setTimeout(() => playTone(n, 'square', 0.15, 0.1), i * 150)); }
+    function sfxReward() { playTone(880, 'sine', 0.1, 0.1); setTimeout(() => playTone(1108.73, 'sine', 0.3, 0.1), 100); }
     function startBGM() {
         if (!soundEnabled || !audioCtx) return; stopBGM(); const baseFreqs = [261.63, 329.63, 392.00]; let step = 0;
         bgmInterval = setInterval(() => {
@@ -271,18 +271,58 @@
 
     /** --- SYSTEM & SETUP --- */
     const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d'); const container = document.getElementById('game-container'); const canvasWrapper = document.getElementById('canvas-wrapper');
-    const screens = { name: document.getElementById('screen-name'), howto: document.getElementById('screen-howto'), win: document.getElementById('screen-win') };
-    const toastEl = document.getElementById('toast'); const hudContainer = document.getElementById('hud-container'); const hudEls = { name: document.getElementById('hud-name'), level: document.getElementById('hud-level'), time: document.getElementById('hud-time') };
+    const screens = { 
+        name: document.getElementById('screen-name'), 
+        howto: document.getElementById('screen-howto'), 
+        win: document.getElementById('screen-win'),
+        gameover: document.getElementById('screen-gameover'),
+        mysterybox: document.getElementById('screen-mystery-box') 
+    };
+    const toastEl = document.getElementById('toast'); 
+    const hudContainer = document.getElementById('hud-container'); 
+    const hudEls = { name: document.getElementById('hud-name'), level: document.getElementById('hud-level'), score: document.getElementById('hud-score'), lives: document.getElementById('hud-lives'), combo: document.getElementById('hud-combo') };
     const memBarContainer = document.getElementById('memorize-bar-container'); const memBar = document.getElementById('memorize-bar');
+    const peekBtn = document.getElementById('btn-peek'); const peekBadge = document.getElementById('peek-badge');
 
     const levelBackgrounds = ["radial-gradient(circle at 50% 50%, #FFD194 0%, #70E1F5 100%)", "linear-gradient(135deg, #ABDCFF 10%, #0396FF 100%)", "linear-gradient(135deg, #81FBB8 10%, #28C76F 100%)", "linear-gradient(135deg, #FDEB71 10%, #F8D800 100%)", "radial-gradient(circle at center, #ffffff 0%, #ED1A3B 100%)"];
-    const TOTAL_LEVELS = 5; const MEMORIZE_TIME = 2.0; const FLIP_ANIM_SPEED = 12.0; const SHUFFLE_DURATION = 0.5; 
-    let playerName = "Guest"; let level = 1; let globalTime = 0; let gameState = 'nameInput'; let stateTimer = 0; let lastTime = performance.now(); let animId;
-    let layout = { cw: 0, ch: 0, startX: 0, startY: 0, padding: 12, cols: 4, rows: 2 }; let cards = []; let selectedCards = []; let matchesFound = 0; let particles = []; let shuffleSequence = 0; let maxShuffles = 0; let shuffleProgress = 0;
     
-    // ตัวแปรสำหรับขนาดจอที่แท้จริง
-    let cssWidth = 0;
-    let cssHeight = 0;
+    // --- ตัวแปรระบบเกม ---
+    const TOTAL_LEVELS = 5; const MEMORIZE_TIME = 2.0; const FLIP_ANIM_SPEED = 12.0; const SHUFFLE_DURATION = 0.5; 
+    let playerName = "Guest"; 
+    let level = 1; 
+    let globalTime = 0; 
+    let gameState = 'nameInput'; 
+    let stateTimer = 0; 
+    let lastTime = performance.now(); 
+    let animId;
+    
+    // ระบบคะแนน หัวใจ คอมโบ
+    let score = 0;
+    let combo = 0;
+    let lives = 3; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ (พลาดครั้งที่ 3 ตาย)
+    let tempLives = 0; // หัวใจชั่วคราว
+    let peekCount = 0; // ไอเทมแอบดู
+    let nextLevelScoreMultiplier = 1; // คูณคะแนนพิเศษด่านถัดไป
+    let currentScoreMultiplier = 1;
+
+    let layout = { cw: 0, ch: 0, startX: 0, startY: 0, padding: 12, cols: 4, rows: 2 }; 
+    let cards = []; let selectedCards = []; let matchesFound = 0; let particles = []; let floatingTexts = [];
+    let shuffleSequence = 0; let maxShuffles = 0; let shuffleProgress = 0;
+
+    class FloatingText {
+        constructor(x, y, text, color) {
+            this.x = x; this.y = y; this.text = text; this.color = color;
+            this.life = 1.0; this.vy = -50;
+        }
+        update(dt) { this.y += this.vy * dt; this.life -= dt; }
+        draw(ctx) {
+            ctx.save(); ctx.globalAlpha = Math.max(0, this.life);
+            ctx.fillStyle = this.color; ctx.font = "900 24px Prompt";
+            ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 4;
+            ctx.fillText(this.text, this.x, this.y);
+            ctx.restore();
+        }
+    }
 
     class Particle {
         constructor(x, y, color) { this.x = x; this.y = y; this.color = color; const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 150 + 50; this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed; this.life = 1.0; this.size = Math.random() * 6 + 3; this.gravity = 200; }
@@ -299,67 +339,75 @@
         updatePositionFromGrid() { const col = this.gridIndex % layout.cols; const row = Math.floor(this.gridIndex / layout.cols); this.targetX = layout.startX + col * (layout.cw + layout.padding); this.targetY = layout.startY + row * (layout.ch + layout.padding); }
         draw(ctx) {
             const cx = this.x + layout.cw / 2; const cy = this.y + layout.ch / 2; ctx.save(); ctx.translate(cx, cy); let currentScaleY = this.scaleY; if (this.state === 'matched' && this.matchedAnimTimer > 0) { currentScaleY = 1 + Math.sin(this.matchedAnimTimer * Math.PI * 4) * 0.1; } ctx.scale(this.scaleX, currentScaleY); ctx.translate(-cx, -cy);
-            if (this.scaleX > 0.1) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.roundRect(this.x + 6, this.y + 10, layout.cw, layout.ch, 12); ctx.fill(); }
-            ctx.beginPath(); ctx.roundRect(this.x, this.y, layout.cw, layout.ch, 12); ctx.clip();
             
+            if (this.scaleX > 0.1) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.roundRect(this.x + 6, this.y + 10, layout.cw, layout.ch, 12); ctx.fill(); }
+            
+            ctx.beginPath(); ctx.roundRect(this.x, this.y, layout.cw, layout.ch, 12); ctx.clip();
+            ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+
             if (this.state === 'faceup' || this.state === 'matched') {
-                const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + layout.ch); gradient.addColorStop(0, '#ffffff'); gradient.addColorStop(1, '#f0f0f0'); ctx.fillStyle = gradient; ctx.fill(); this.drawIcon(ctx); ctx.lineWidth = 4; ctx.strokeStyle = '#cccccc'; ctx.stroke();
-                if (this.state === 'matched') { ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.fill(); ctx.fillStyle = '#4CAF50'; ctx.beginPath(); ctx.arc(this.x + layout.cw - 18, this.y + 18, 14, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(this.x + layout.cw - 23, this.y + 18); ctx.lineTo(this.x + layout.cw - 19, this.y + 23); ctx.lineTo(this.x + layout.cw - 13, this.y + 13); ctx.stroke(); }
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch);
+                this.drawIcon(ctx); 
+                ctx.lineWidth = 4; ctx.strokeStyle = '#cccccc'; ctx.beginPath(); ctx.roundRect(this.x, this.y, layout.cw, layout.ch, 12); ctx.stroke();
+                
+                if (this.state === 'matched') { 
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); 
+                    ctx.fillStyle = '#4CAF50'; ctx.beginPath(); ctx.arc(this.x + layout.cw - 18, this.y + 18, 14, 0, Math.PI*2); ctx.fill(); 
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(this.x + layout.cw - 23, this.y + 18); ctx.lineTo(this.x + layout.cw - 19, this.y + 23); ctx.lineTo(this.x + layout.cw - 13, this.y + 13); ctx.stroke(); 
+                }
             } else {
-                ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = 'var(--isuzu-red)'; ctx.stroke();
                 const img = images.cardBack;
-                if (img && img.complete && img.naturalWidth > 0) { const padding = 10; const maxW = layout.cw - padding * 2; const maxH = layout.ch - padding * 2; const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight); const drawW = img.naturalWidth * scale; const drawH = img.naturalHeight * scale; ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH); } 
+                if (img && img.complete && img.naturalWidth > 0) { 
+                    ctx.drawImage(img, this.x, this.y, layout.cw, layout.ch); 
+                } else {
+                    ctx.fillStyle = '#ffffff'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); 
+                }
+                ctx.lineWidth = 4; ctx.strokeStyle = 'var(--isuzu-red)'; ctx.beginPath(); ctx.roundRect(this.x, this.y, layout.cw, layout.ch, 12); ctx.stroke();
             }
             ctx.restore();
         }
         drawIcon(ctx) {
-            const cx = this.x + layout.cw / 2; const cy = this.y + layout.ch / 2; const padding = 15; const maxW = layout.cw - padding * 2; const maxH = layout.ch - padding * 2;
-            let imgToDraw = null; if (this.type === 1) imgToDraw = images.type1; else if (this.type === 2) imgToDraw = images.type2; else if (this.type === 3) imgToDraw = images.type3; else if (this.type === 4) imgToDraw = images.type4;
-            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth > 0) { const scale = Math.min(maxW / imgToDraw.naturalWidth, maxH / imgToDraw.naturalHeight); const drawW = imgToDraw.naturalWidth * scale; const drawH = imgToDraw.naturalHeight * scale; ctx.drawImage(imgToDraw, cx - drawW / 2, cy - drawH / 2, drawW, drawH); } 
-            else { ctx.fillStyle = '#f9f9f9'; ctx.beginPath(); ctx.roundRect(cx - maxW/2, cy - maxH/2, maxW, maxH, 8); ctx.fill(); }
+            let imgToDraw = null; 
+            if (this.type === 1) imgToDraw = images.type1; 
+            else if (this.type === 2) imgToDraw = images.type2; 
+            else if (this.type === 3) imgToDraw = images.type3; 
+            else if (this.type === 4) imgToDraw = images.type4;
+
+            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth > 0) { 
+                ctx.drawImage(imgToDraw, this.x, this.y, layout.cw, layout.ch); 
+            } else { 
+                ctx.fillStyle = '#f9f9f9'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); 
+            }
         }
         update(dt) { if (this.flipping) { this.scaleX -= FLIP_ANIM_SPEED * dt; if (this.scaleX <= 0) { this.scaleX = 0; this.state = this.targetState; this.flipping = false; } } else if (this.scaleX < 1) { this.scaleX += FLIP_ANIM_SPEED * dt; if (this.scaleX > 1) this.scaleX = 1; } if (this.state === 'matched' && this.matchedAnimTimer > 0) this.matchedAnimTimer -= dt; }
-        flip(newState) { if (this.state !== newState && !this.flipping) { this.targetState = newState; this.flipping = true; if(newState === 'faceup') sfxFlip(); } }
+        flip(newState, silent = false) { if (this.state !== newState && !this.flipping) { this.targetState = newState; this.flipping = true; if(newState === 'faceup' && !silent) sfxFlip(); } }
     }
 
-    // 🌟 2. อัปเดตเพื่อรองรับ High-DPI (Retina Display) ให้ภาพคมชัด
     function resizeCanvas() { 
         const rect = canvasWrapper.getBoundingClientRect(); 
         const dpr = window.devicePixelRatio || 1;
-        
-        cssWidth = rect.width;
-        cssHeight = rect.height;
-        
-        canvas.width = cssWidth * dpr;
-        canvas.height = cssHeight * dpr;
-        canvas.style.width = `${cssWidth}px`;
-        canvas.style.height = `${cssHeight}px`;
-        
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Reset scale
-        
-        // เซ็ตให้ภาพสมูทและคมชัด
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        logicalWidth = rect.width; logicalHeight = rect.height;
 
-        calcGrid(cssWidth, cssHeight); 
-        
+        canvas.width = logicalWidth * dpr; canvas.height = logicalHeight * dpr; 
+        canvas.style.width = logicalWidth + 'px'; canvas.style.height = logicalHeight + 'px';
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.scale(dpr, dpr);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+
+        calcGrid(); 
         cards.forEach(c => { 
             c.updatePositionFromGrid(); 
-            if (gameState !== 'shuffling') { 
-                c.x = c.targetX; 
-                c.y = c.targetY; 
-            } 
+            if (gameState !== 'shuffling') { c.x = c.targetX; c.y = c.targetY; } 
         }); 
         draw(); 
     }
-    
-    function calcGrid(w, h) {
+
+    function calcGrid() {
         layout.cols = 4; layout.rows = 2; 
-        layout.padding = Math.min(w * 0.04, 20); 
-        const availableW = w - (layout.padding * (layout.cols + 1)); 
-        const availableH = h - (layout.padding * (layout.rows + 1)); 
-        layout.cw = availableW / layout.cols; 
-        layout.ch = availableH / layout.rows;
+        layout.padding = Math.min(logicalWidth * 0.04, 20); 
+        const availableW = logicalWidth - (layout.padding * (layout.cols + 1)); 
+        const availableH = logicalHeight - (layout.padding * (layout.rows + 1)); 
+        layout.cw = availableW / layout.cols; layout.ch = availableH / layout.rows;
         
         const targetAspect = 1.25; 
         if (layout.cw * targetAspect > layout.ch) layout.cw = layout.ch / targetAspect; 
@@ -370,8 +418,7 @@
         
         const totalW = layout.cols * layout.cw + (layout.cols - 1) * layout.padding; 
         const totalH = layout.rows * layout.ch + (layout.rows - 1) * layout.padding; 
-        layout.startX = (w - totalW) / 2; 
-        layout.startY = (h - totalH) / 2; 
+        layout.startX = (logicalWidth - totalW) / 2; layout.startY = (logicalHeight - totalH) / 2; 
     }
 
     function hideAllScreens() { Object.values(screens).forEach(s => s.classList.add('hidden')); }
@@ -382,14 +429,29 @@
 
     /** --- GAME FLOW --- */
     function saveNameAndStart() {
-        initAudio(); const input = document.getElementById('player-name-input').value.trim(); playerName = input === "" ? "Guest" : input.substring(0, 20); let displayHudName = playerName.length > 8 ? playerName.substring(0,8) + '...' : playerName; hudEls.name.innerText = displayHudName; resetFullGame();
+        initAudio(); const input = document.getElementById('player-name-input').value.trim(); playerName = input === "" ? "Guest" : input.substring(0, 20); let displayHudName = playerName.length > 8 ? playerName.substring(0,8) + '...' : playerName; hudEls.name.innerText = displayHudName; 
+        resetFullGame();
     }
 
-    function resetFullGame() { level = 1; globalTime = 0; isScoreSubmitted = false; hideAllScreens(); hudContainer.style.display = 'flex'; setTimeout(() => resizeCanvas(), 10); startLevel(); }
+    function resetFullGame() { 
+        level = 1; globalTime = 0; score = 0; combo = 0; lives = 3; tempLives = 0; peekCount = 0;
+        nextLevelScoreMultiplier = 1;
+        finalImageDataUrl = ""; 
+
+        hideAllScreens(); hudContainer.style.display = 'flex'; setTimeout(() => resizeCanvas(), 10); startLevel(); 
+    }
     
     function startLevel() {
-        matchesFound = 0; selectedCards = []; cards = []; const bgIndex = Math.min(level - 1, levelBackgrounds.length - 1); container.style.background = levelBackgrounds[bgIndex]; updateHUD(); startBGM();
-        maxShuffles = level; let types = [1, 1, 2, 2, 3, 3, 4, 4]; types.sort(() => Math.random() - 0.5); for (let i = 0; i < 8; i++) { let card = new Card(i, types[i], i); card.state = 'faceup'; card.targetState = 'faceup'; cards.push(card); }
+        matchesFound = 0; selectedCards = []; cards = []; floatingTexts = [];
+        currentScoreMultiplier = nextLevelScoreMultiplier;
+        nextLevelScoreMultiplier = 1; // reset for next use
+
+        const bgIndex = Math.min(level - 1, levelBackgrounds.length - 1); container.style.background = levelBackgrounds[bgIndex]; 
+        updateHUD(); startBGM();
+        
+        maxShuffles = level; let types = [1, 1, 2, 2, 3, 3, 4, 4]; types.sort(() => Math.random() - 0.5); 
+        for (let i = 0; i < 8; i++) { let card = new Card(i, types[i], i); card.state = 'faceup'; card.targetState = 'faceup'; cards.push(card); }
+        
         gameState = 'memorize'; stateTimer = MEMORIZE_TIME; memBarContainer.style.display = 'block';
     }
 
@@ -401,122 +463,253 @@
         for (let card of cards) { if (x >= card.x && x <= card.x + layout.cw && y >= card.y && y <= card.y + layout.ch) { if (card.state === 'facedown' && !card.flipping && selectedCards.length < 2) { card.flip('faceup'); selectedCards.push(card); if (selectedCards.length === 2) checkMatch(); } break; } }
     }
 
-    function checkMatch() { gameState = 'wait'; stateTimer = 0.6; const [c1, c2] = selectedCards; if (c1.type === c2.type) { matchesFound++; stateTimer = 0.3; sfxMatch(); setTimeout(() => { spawnParticles(c1.x + layout.cw/2, c1.y + layout.ch/2); spawnParticles(c2.x + layout.cw/2, c2.y + layout.ch/2); }, 100); } else { sfxMismatch(); } updateHUD(); }
-    function resolveMatch() { const [c1, c2] = selectedCards; if (c1.type === c2.type) { c1.state = 'matched'; c2.state = 'matched'; c1.matchedAnimTimer = 0.5; c2.matchedAnimTimer = 0.5; if (matchesFound >= 4) setTimeout(levelComplete, 400); else gameState = 'playing'; } else { c1.flip('facedown'); c2.flip('facedown'); gameState = 'playing'; } selectedCards = []; }
+    function checkMatch() { 
+        gameState = 'wait'; stateTimer = 0.6; const [c1, c2] = selectedCards; 
+        if (c1.type === c2.type) { 
+            matchesFound++; stateTimer = 0.3; combo++; 
+            
+            // การคิดคะแนน (Base 100 * Combo * Multiplier)
+            const pts = Math.floor(100 * combo * currentScoreMultiplier);
+            score += pts;
+            floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y, `+${pts}`, "#4CAF50"));
+            if(combo > 1) floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y - 30, `COMBO x${combo}!`, "#FF8C00"));
+
+            sfxMatch(combo); 
+            setTimeout(() => { spawnParticles(c1.x + layout.cw/2, c1.y + layout.ch/2); spawnParticles(c2.x + layout.cw/2, c2.y + layout.ch/2); }, 100); 
+        } else { 
+            combo = 0;
+            sfxMismatch(); 
+            // หักหัวใจ
+            if (tempLives > 0) tempLives--; else lives--;
+            floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y, "Miss!", "#ED1A3B"));
+        } 
+        updateHUD(); 
+
+        // ตรวจสอบตาย
+        if (lives <= 0) {
+            setTimeout(() => { gameOver(); }, 500);
+        }
+    }
+    
+    function resolveMatch() { 
+        if (lives <= 0) return; // ถ้าตายแล้วไม่ต้องทำต่อ
+        const [c1, c2] = selectedCards; 
+        if (c1.type === c2.type) { 
+            c1.state = 'matched'; c2.state = 'matched'; c1.matchedAnimTimer = 0.5; c2.matchedAnimTimer = 0.5; 
+            if (matchesFound >= 4) {
+                setTimeout(levelComplete, 500); 
+            } else {
+                gameState = 'playing'; 
+            }
+        } else { 
+            c1.flip('facedown'); c2.flip('facedown'); gameState = 'playing'; 
+        } 
+        selectedCards = []; 
+    }
+
+    function gameOver() {
+        stopBGM(); playTone(150, 'sawtooth', 1.0, 0.2);
+        gameState = 'gameover'; hudContainer.style.display = 'none';
+        document.getElementById('lose-score').innerText = score;
+        drawFinalCanvasState("GAME OVER", score);
+        showScreen('screen-gameover');
+    }
 
     function levelComplete() {
         if (level === TOTAL_LEVELS) {
-            stopBGM(); sfxWin(); gameState = 'gamewin'; hudContainer.style.display = 'none'; 
-            document.getElementById('win-time').innerText = formatTime(globalTime);
-            for(let i=0; i<6; i++) setTimeout(() => spawnParticles(cssWidth * Math.random(), cssHeight, 50), i*250);
+            stopBGM(); sfxWin(); 
+            gameState = 'gamewin'; 
+            hudContainer.style.display = 'none'; 
             
-            let isTop5 = false;
-            if (topScoresList.length < 5) {
-                isTop5 = true;
-            } else {
-                let fifthPlaceTime = topScoresList[4].timeMs;
-                if (globalTime < fifthPlaceTime) isTop5 = true;
-            }
+            document.getElementById('win-score').innerText = score;
+            for(let i=0; i<6; i++) setTimeout(() => spawnParticles(logicalWidth * Math.random(), logicalHeight, 50), i*250);
 
-            // จัดการการแสดงผลปุ่ม
-            if (isTop5 && !isScoreSubmitted) {
-                document.getElementById('top5-form').style.display = 'block';
-                document.getElementById('btn-submit-score').innerText = 'บันทึกคะแนนเพื่อลุ้นรางวัล';
-                document.getElementById('btn-submit-score').disabled = false;
-                
-                // ซ่อนปุ่มอื่นๆ บังคับให้กรอกเบอร์ก่อน
-                document.getElementById('end-game-actions').style.display = 'none';
-            } else {
-                document.getElementById('top5-form').style.display = 'none';
-                
-                // ถ้าไม่ติด Top 5 หรือส่งคะแนนไปแล้ว ให้โชว์ปุ่มอื่นๆ ตามปกติ
-                document.getElementById('end-game-actions').style.display = 'block';
-            }
-
+            drawFinalCanvasState("MISSION COMPLETE", score);
             showScreen('screen-win');
         } else {
-            level++; startLevel();
+            // โชว์กล่องสุ่มก่อนไปด่านถัดไป
+            tempLives = 0; // ล้างหัวใจชั่วคราวทิ้งทุกจบด่าน
+            showMysteryBox();
         }
     }
 
-    function submitTop5Score() {
-        const phoneInput = document.getElementById('player-phone-input').value.trim();
-        if (phoneInput.length < 9) {
-            showToast("กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง");
-            return;
-        }
+    // --- Mystery Box Logic ---
+    function showMysteryBox() {
+        gameState = 'mysterybox'; 
+        document.getElementById('mystery-box-btn').style.display = 'inline-block';
+        document.getElementById('btn-next-level').style.display = 'none';
+        document.getElementById('reward-text').style.display = 'none';
+        showScreen('screen-mystery-box');
+    }
 
-        const btn = document.getElementById('btn-submit-score');
-        btn.innerText = "กำลังบันทึก...";
-        btn.disabled = true;
+    function openMysteryBox() {
+        sfxReward();
+        document.getElementById('mystery-box-btn').style.display = 'none';
+        
+        const rewards = [
+            { id: 1, text: "🎉 คะแนนคูณ 2 ในด่านถัดไป!" },
+            { id: 2, text: "❤️ ได้รับโอกาสผิดพลาดเพิ่มถาวร 1 ครั้ง!" },
+            { id: 3, text: "🛡️ ได้รับโอกาสผิดพลาดฟรี 1 ครั้ง (เฉพาะด่านหน้า)!" },
+            { id: 4, text: "👁️ ได้รับตัวช่วยแอบดูไพ่ 1 ครั้ง!" }
+        ];
+        
+        const reward = rewards[Math.floor(Math.random() * rewards.length)];
+        
+        if (reward.id === 1) nextLevelScoreMultiplier = 2;
+        if (reward.id === 2) lives++;
+        if (reward.id === 3) tempLives++;
+        if (reward.id === 4) peekCount++;
 
-        const newScoreRef = db.ref('leaderboard').push();
-        newScoreRef.set({
-            name: playerName,
-            phone: phoneInput,
-            timeMs: globalTime,
-            timeFormatted: formatTime(globalTime),
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            showToast("บันทึกสถิติของคุณเรียบร้อยแล้ว!");
-            isScoreSubmitted = true;
-            document.getElementById('top5-form').style.display = 'none';
-            
-            // บันทึกเสร็จแล้ว โชว์ปุ่มอื่นๆ ขึ้นมาให้กดได้
-            document.getElementById('end-game-actions').style.display = 'block';
-        }).catch((error) => {
-            console.error(error);
-            showToast("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-            btn.innerText = "ลองใหม่อีกครั้ง";
-            btn.disabled = false;
-        });
+        const rewardTextEl = document.getElementById('reward-text');
+        rewardTextEl.innerText = reward.text;
+        rewardTextEl.style.display = 'block';
+        rewardTextEl.style.animation = 'popIn 0.5s ease forwards';
+        
+        document.getElementById('btn-next-level').style.display = 'block';
+        updateHUD();
+    }
+
+    function continueToNextLevel() {
+        level++; 
+        hideAllScreens();
+        startLevel();
+    }
+
+    // --- Peek Feature ---
+    function usePeek() {
+        if (gameState !== 'playing' || peekCount <= 0) return;
+        peekCount--;
+        sfxReward();
+        updateHUD();
+        gameState = 'peeking';
+        
+        let hiddenCards = cards.filter(c => c.state === 'facedown' && !selectedCards.includes(c));
+        hiddenCards.forEach(c => c.flip('faceup', true));
+        
+        setTimeout(() => {
+            hiddenCards.forEach(c => c.flip('facedown', true));
+            gameState = 'playing';
+        }, 1500);
     }
 
     /** --- UPDATE & DRAW --- */
-    function updateHUD() { hudEls.level.innerText = Math.min(level, 5); }
+    function updateHUD() { 
+        hudEls.level.innerText = Math.min(level, 5); 
+        hudEls.score.innerText = score;
+        hudEls.combo.innerText = combo > 1 ? `x${combo}` : '';
+        hudEls.lives.innerText = '❤️'.repeat(lives) + '💙'.repeat(tempLives);
+        
+        if (peekCount > 0) {
+            peekBtn.style.display = 'flex';
+            peekBadge.innerText = peekCount;
+        } else {
+            peekBtn.style.display = 'none';
+        }
+    }
+    
     function update(dt) {
-        if (['memorize', 'shuffling', 'playing', 'wait'].includes(gameState)) { globalTime += dt; hudEls.time.innerText = formatTime(globalTime); }
-        cards.forEach(c => c.update(dt)); for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1); }
+        if (['memorize', 'shuffling', 'playing', 'wait', 'peeking'].includes(gameState)) { 
+            globalTime += dt; 
+        }
+
+        cards.forEach(c => c.update(dt)); 
+        for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1); }
+        for (let i = floatingTexts.length - 1; i >= 0; i--) { floatingTexts[i].update(dt); if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1); }
+
         if (gameState === 'memorize') { stateTimer -= dt; let progress = Math.max(0, stateTimer / MEMORIZE_TIME); memBar.style.width = `${progress * 100}%`; if (stateTimer <= 0) { cards.forEach(c => c.flip('facedown')); gameState = 'wait'; stateTimer = 0.5; } } 
         else if (gameState === 'wait' && selectedCards.length === 0) { stateTimer -= dt; if (stateTimer <= 0) startShuffleSequence(); } 
         else if (gameState === 'shuffling') { shuffleProgress += dt / SHUFFLE_DURATION; let p = Math.min(shuffleProgress, 1.0); let easeP = easeInOutQuad(p); cards.forEach(c => { c.x = c.prevX + (c.targetX - c.prevX) * easeP; c.y = c.prevY + (c.targetY - c.prevY) * easeP; }); if (p >= 1.0) executeShuffleStep(); } 
-        else if (gameState === 'wait' && selectedCards.length === 2) { stateTimer -= dt; if (stateTimer <= 0) resolveMatch(); }
+        else if (gameState === 'wait' && selectedCards.length === 2 && lives > 0) { stateTimer -= dt; if (stateTimer <= 0) resolveMatch(); }
     }
 
     function draw() {
-        ctx.clearRect(0, 0, cssWidth, cssHeight);
-        if (gameState !== 'nameInput' && gameState !== 'howto') { const sortedCards = [...cards].sort((a,b) => { if(a.flipping || b.flipping) return a.flipping ? 1 : -1; return 0; }); sortedCards.forEach(c => c.draw(ctx)); }
-        particles.forEach(p => p.draw(ctx));
-
-        if (gameState === 'capturing') {
-            ctx.fillStyle = 'rgba(17,17,17, 0.85)'; ctx.fillRect(0, 0, cssWidth, cssHeight);
-            const cx = cssWidth / 2; const cy = cssHeight / 2; const boxW = Math.min(cssWidth * 0.9, 500); const boxH = 450;
-            ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.roundRect(cx - boxW/2, cy - boxH/2, boxW, boxH, 20); ctx.fill(); ctx.shadowBlur = 0; 
-            ctx.fillStyle = '#ED1A3B'; ctx.beginPath(); ctx.roundRect(cx - boxW/2, cy - boxH/2, boxW, 10, {tl: 20, tr: 20, bl: 0, br: 0}); ctx.fill();
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#4CAF50'; ctx.font = `800 45px 'Prompt', sans-serif`; ctx.fillText("YOU WIN!", cx, cy - 160);
-            ctx.font = `800 20px 'Prompt', sans-serif`; const promoText = 'เข้าศูนย์ "อีซูซุสหะภัณฑ์ไม่ต้องรอนาน"'; const promoW = ctx.measureText(promoText).width;
-            ctx.fillStyle = '#ED1A3B'; ctx.shadowColor = 'rgba(237, 26, 59, 0.5)'; ctx.shadowBlur = 10; ctx.beginPath(); ctx.roundRect(cx - (promoW/2) - 20, cy - 110, promoW + 40, 40, 20); ctx.fill(); ctx.shadowBlur = 0; 
-            ctx.fillStyle = '#ffffff'; ctx.fillText(promoText, cx, cy - 90);
-            ctx.fillStyle = '#333'; ctx.font = `600 22px 'Prompt', sans-serif`; ctx.fillText(`ผู้เล่น: ${playerName}`, cx, cy - 25);
-            ctx.font = `400 18px 'Prompt', sans-serif`; ctx.fillText("เคลียร์ครบ 5 เลเวลด้วยเวลา", cx, cy + 15);
-            ctx.fillStyle = '#ED1A3B'; ctx.font = `800 55px 'Prompt', sans-serif`; ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 4; ctx.fillText(formatTime(globalTime), cx, cy + 75); ctx.shadowBlur = 0;
-            ctx.fillStyle = '#111'; ctx.font = `900 24px 'Prompt', sans-serif`; ctx.fillText("อีซูซุสหะภัณฑ์ เกมส์จับคู่", cx, cy + 170);
+        ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+        if (['memorize', 'shuffling', 'playing', 'wait', 'peeking'].includes(gameState)) { 
+            const sortedCards = [...cards].sort((a,b) => { if(a.flipping || b.flipping) return a.flipping ? 1 : -1; return 0; }); 
+            sortedCards.forEach(c => c.draw(ctx)); 
         }
+        particles.forEach(p => p.draw(ctx));
+        floatingTexts.forEach(t => t.draw(ctx));
     }
 
-    function gameLoop(timestamp) { const dt = Math.min((timestamp - lastTime) / 1000, 0.1); lastTime = timestamp; if (gameState !== 'capturing') update(dt); draw(); animId = requestAnimationFrame(gameLoop); }
+    function gameLoop(timestamp) { const dt = Math.min((timestamp - lastTime) / 1000, 0.1); lastTime = timestamp; update(dt); draw(); animId = requestAnimationFrame(gameLoop); }
 
-    /** --- SOCIAL & EXPORT --- */
+    function drawFinalCanvasState(titleText, finalScore) {
+        const bgImages = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg']; // ใส่ภาพ bg จริงของเกม
+        const selectedBgSrc = bgImages[Math.floor(Math.random() * bgImages.length)];
+        const bgImg = new Image();
+        bgImg.src = selectedBgSrc;
+
+        bgImg.onload = function() {
+            ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+            const canvasRatio = logicalWidth / logicalHeight;
+            const imgRatio = bgImg.width / bgImg.height;
+            let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+
+            if (canvasRatio > imgRatio) { drawWidth = logicalWidth; drawHeight = logicalWidth / imgRatio; offsetY = (logicalHeight - drawHeight) / 2; } 
+            else { drawHeight = logicalHeight; drawWidth = logicalHeight * imgRatio; offsetX = (logicalWidth - drawWidth) / 2; }
+            
+            ctx.drawImage(bgImg, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+            ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+            ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+
+            ctx.fillStyle = '#FFD700'; ctx.font = 'bold 28px Prompt';
+            ctx.fillText('สถิติของคุณ', logicalWidth/2, logicalHeight * 0.15);
+
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 24px Prompt';
+            ctx.fillText('Player: ' + playerName, logicalWidth/2, logicalHeight * 0.22);
+
+            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; 
+            ctx.font = 'bold 36px Prompt';
+            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.35);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 80px Prompt'; 
+            ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.48); 
+            ctx.font = 'bold 24px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.58);
+
+            ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+            try { finalImageDataUrl = canvas.toDataURL("image/jpeg", 0.95); } catch (e) { console.error("แคปภาพล้มเหลว:", e); }
+        };
+
+        bgImg.onerror = function() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; ctx.font = 'bold 36px Prompt'; ctx.textAlign = 'center';
+            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.35);
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 80px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.48); 
+            try { finalImageDataUrl = canvas.toDataURL("image/jpeg", 0.95); } catch (e) {}
+        };
+    }
+
     function saveScoreImage() {
-        let capturePreviousState = gameState; gameState = 'capturing'; draw(); 
-        try { const dataURL = canvas.toDataURL('image/png', 1.0); const link = document.createElement('a'); link.download = `Isuzu_Match_Score_${playerName}.png`; link.href = dataURL; document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast("กำลังบันทึกรูปภาพ..."); } 
-        catch(e) { console.error("Canvas export failed", e); showToast("ไม่สามารถบันทึกรูปภาพได้"); }
-        gameState = capturePreviousState;
+        if (!finalImageDataUrl) { showToast("กำลังเตรียมภาพ รอสักครู่นะครับ..."); return; }
+        try {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed'; modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.95)'; modal.style.zIndex = '9999'; modal.style.display = 'flex'; modal.style.flexDirection = 'column'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center'; modal.style.padding = '20px';
+            
+            const text = document.createElement('p');
+            text.innerHTML = "👇 <b>แตะค้างที่รูปภาพ</b> เพื่อบันทึกลงเครื่อง 👇<br><span style='font-size:14px; color:#aaa;'>(ถ้าเล่นบนคอมพิวเตอร์ คลิกขวา > Save image as)</span>";
+            text.style.color = '#FFD700'; text.style.fontFamily = 'Prompt, sans-serif'; text.style.fontSize = '18px'; text.style.marginBottom = '20px'; text.style.textAlign = 'center';
+            
+            const img = document.createElement('img');
+            img.src = finalImageDataUrl;
+            img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; img.style.borderRadius = '10px'; img.style.boxShadow = '0 0 20px rgba(255,255,255,0.2)';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.innerText = "✖ ปิดหน้าต่างนี้";
+            closeBtn.style.marginTop = '25px'; closeBtn.style.padding = '12px 30px'; closeBtn.style.background = '#ED1A3B'; closeBtn.style.color = 'white'; closeBtn.style.border = 'none'; closeBtn.style.borderRadius = '10px'; closeBtn.style.fontFamily = 'Prompt, sans-serif'; closeBtn.style.fontSize = '18px'; closeBtn.style.fontWeight = 'bold';
+            closeBtn.onclick = () => document.body.removeChild(modal);
+            
+            modal.appendChild(text); modal.appendChild(img); modal.appendChild(closeBtn); document.body.appendChild(modal);
+        } catch (err) { console.error("Save popup error:", err); showToast("เกิดข้อผิดพลาดในการแสดงภาพ"); }
     }
 
     function copyReviewText() {
         const shareTexts = ["เอารถมาเข้าศูนย์ อีซูซุสหะภัณฑ์ นั่งเล่นเกมจับคู่ชิลๆ ลุ้นกินชาบูฟรีฟินๆ สิ้นเดือนนี้ ใครสายชาบูต้องมาจัดแล้วปะ! 🚗✨🍲\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน", "รอรถแบบไม่น่าเบื่ออีกต่อไป! เอาลูกรักมาเช็คระยะที่ อีซูซุสหะภัณฑ์ มีเกมจับคู่ให้เล่นเพลินๆ แถมได้ลุ้นชาบูไปกินสิ้นเดือนอี๊กก เริ่ดเกิ๊นนน 🎮🥩🚙\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน", "มาเข้าศูนย์ อีซูซุสหะภัณฑ์ ทั้งที จะนั่งรอเฉยๆ ได้ไง 😜 เล่นเกมจับคู่เพลินๆ ลุ้นคูปองชาบูกันไปเลยยยย 🥢🚗\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน"];
-        let randomText = shareTexts[Math.floor(Math.random() * shareTexts.length)]; const fullText = `ผู้เล่น: ${playerName}\nเวลาเคลียร์เกม: ${formatTime(globalTime)}\n\n${randomText}`;
+        let randomText = shareTexts[Math.floor(Math.random() * shareTexts.length)]; const fullText = `ผู้เล่น: ${playerName}\nคะแนนที่ทำได้: ${score} คะแนน!\n\n${randomText}`;
         const textArea = document.createElement("textarea"); textArea.value = fullText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
         try { document.execCommand('copy'); showToast("คัดลอกข้อความสำเร็จ! นำไปโพสต์ได้เลย"); } catch (err) { console.error('Copy fallback failed', err); showToast("อุปกรณ์นี้ไม่รองรับการคัดลอกอัตโนมัติ"); } document.body.removeChild(textArea);
     }

@@ -13,7 +13,6 @@
             --isuzu-light: #f4f4f4; --isuzu-white: #ffffff;
         }
 
-        /* 🌟 1. ปรับแต่งส่วน Reset และเพิ่ม touch-action */
         * { 
             box-sizing: border-box; 
             margin: 0; 
@@ -23,7 +22,6 @@
             touch-action: none; 
         }
 
-        /* 🌟 2. ล็อคขนาดจอและป้องกันการเลื่อนหลุด */
         html, body {
             width: 100%;
             height: 100%;
@@ -31,7 +29,6 @@
             background-color: var(--isuzu-darker);
         }
 
-        /* 🌟 3. ล็อค body ให้ติดขอบจอจริงๆ หลีกเลี่ยงปัญหา 100vh และรอยบากมือถือ */
         body { 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
@@ -44,7 +41,6 @@
             padding-right: env(safe-area-inset-right);
         }
         
-        /* 🌟 4. ตีกรอบเกมส์ให้มีขนาดสูงสุดคงที่ (Letterboxing) */
         #game-container { 
             position: relative; 
             width: 100%; 
@@ -121,11 +117,11 @@
         .rule-list { text-align: left; font-size: 0.9rem; color: #444; margin-bottom: 20px; padding-left: 10px; }
         .rule-list li { margin-bottom: 10px; } .rule-list strong { color: var(--isuzu-red); }
 
-        /* Mystery Box Styles */
-        .mystery-box-container { cursor: pointer; display: inline-block; animation: floatBox 2s infinite ease-in-out; margin-bottom: 20px; }
-        .mystery-box-img { width: 150px; height: 150px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); }
+        /* 🌟 Mystery Box (ปรับเป็น Emoji กล่องของขวัญ) */
+        .mystery-box-container { cursor: pointer; display: inline-block; animation: floatBox 2s infinite ease-in-out; margin-bottom: 10px; }
+        .mystery-box-emoji { font-size: 100px; text-shadow: 0 10px 20px rgba(0,0,0,0.4); line-height: 1.2; }
         @keyframes floatBox { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .reward-text { font-size: 1.3rem; font-weight: 800; color: var(--isuzu-red); margin-top: 15px; display: none; }
+        .reward-text { font-size: 1.2rem; font-weight: 800; color: var(--isuzu-red); margin-top: 15px; display: none; line-height: 1.4; }
 
         .promo-highlight { background: var(--isuzu-red); color: white; padding: 6px 20px; border-radius: 25px; font-size: 1rem; font-weight: 800; display: inline-block; margin: 5px 0 15px 0; animation: pulseBanner 2s infinite; }
         @keyframes pulseBanner { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -180,8 +176,7 @@
                         <li><strong>2. จับคู่:</strong> เปิดไพ่ทีละ 2 ใบเพื่อจับคู่ภาพที่เหมือนกัน</li>
                         <li><strong>3. โอกาสจำกัด:</strong> พลาดได้ <strong style="color:red;">2 ครั้ง</strong> (มี 3 หัวใจ) หัวใจหมด = เกมโอเวอร์</li>
                         <li><strong>4. COMBO:</strong> จับคู่ถูกติดต่อกัน คะแนนจะยิ่งคูณเยอะขึ้น!</li>
-                        <li><strong>5. ความเร็ว:</strong> ทำเวลาให้น้อยที่สุดเพื่อสถิติที่ดี!</li>
-                        <li><strong>6. กล่องสุ่ม:</strong> ผ่านด่านรับสุ่มไอเทมตัวช่วยหรือหัวใจฟรี</li>
+                        <li><strong>5. กล่องสุ่ม:</strong> ผ่านด่านรับสุ่มกล่องของขวัญ เพื่อรับตัวช่วยหรือเพิ่มหัวใจฟรี</li>
                     </ul>
                     <button class="btn" onclick="showScreen('screen-name')">กลับ (BACK)</button>
                 </div>
@@ -189,11 +184,11 @@
 
             <div id="screen-mystery-box" class="screen hidden">
                 <div class="modal">
-                    <h2 class="logo-title" style="font-size: 1.4rem; margin-bottom: 5px; color: var(--isuzu-red);">🎁 Mystery Box!</h2>
+                    <h2 class="logo-title" style="font-size: 1.4rem; margin-bottom: 5px; color: var(--isuzu-red);">🎁 ของขวัญพิเศษ!</h2>
                     <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">แตะที่กล่องของขวัญเพื่อสุ่มรับรางวัลสำหรับด่านถัดไป</p>
                     
                     <div class="mystery-box-container" id="mystery-box-btn" onclick="openMysteryBox()">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041373.png" class="mystery-box-img" alt="Gift Box">
+                        <div class="mystery-box-emoji">🎁</div>
                     </div>
                     
                     <h3 id="reward-text" class="reward-text">ได้รับรางวัล!</h3>
@@ -244,7 +239,6 @@
     let logicalWidth = 0;
     let logicalHeight = 0;
 
-    // รูปภาพหน้าไพ่
     const imgData = { type1: "1.jpg", type2: "2.jpg", type3: "3.jpg", type4: "4.jpg", cardBack: "5.jpg" };
     const images = { type1: new Image(), type2: new Image(), type3: new Image(), type4: new Image(), cardBack: new Image() };
     images.type1.src = imgData.type1; images.type2.src = imgData.type2; images.type3.src = imgData.type3; images.type4.src = imgData.type4; images.cardBack.src = imgData.cardBack;
@@ -259,10 +253,7 @@
         osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
     function sfxFlip() { playTone(400, 'triangle', 0.1, 0.05); } 
-    function sfxMatch(combo) { 
-        playTone(523.25 + (combo*50), 'sine', 0.1, 0.1); 
-        setTimeout(() => playTone(783.99 + (combo*50), 'sine', 0.2, 0.1), 100); 
-    } 
+    function sfxMatch(combo) { playTone(523.25 + (combo*50), 'sine', 0.1, 0.1); setTimeout(() => playTone(783.99 + (combo*50), 'sine', 0.2, 0.1), 100); } 
     function sfxMismatch() { playTone(150, 'sawtooth', 0.3, 0.1); } 
     function sfxWin() { const notes = [261.63, 329.63, 392.00, 523.25]; notes.forEach((n, i) => setTimeout(() => playTone(n, 'square', 0.15, 0.1), i * 150)); }
     function sfxReward() { playTone(880, 'sine', 0.1, 0.1); setTimeout(() => playTone(1108.73, 'sine', 0.3, 0.1), 100); }
@@ -287,12 +278,9 @@
     const toastEl = document.getElementById('toast'); 
     const hudContainer = document.getElementById('hud-container'); 
     const hudEls = { 
-        name: document.getElementById('hud-name'), 
-        level: document.getElementById('hud-level'), 
-        score: document.getElementById('hud-score'), 
-        lives: document.getElementById('hud-lives'), 
-        combo: document.getElementById('hud-combo'),
-        time: document.getElementById('hud-time')
+        name: document.getElementById('hud-name'), level: document.getElementById('hud-level'), 
+        score: document.getElementById('hud-score'), lives: document.getElementById('hud-lives'), 
+        combo: document.getElementById('hud-combo'), time: document.getElementById('hud-time')
     };
     const memBarContainer = document.getElementById('memorize-bar-container'); const memBar = document.getElementById('memorize-bar');
     const peekBtn = document.getElementById('btn-peek'); const peekBadge = document.getElementById('peek-badge');
@@ -309,14 +297,13 @@
     let lastTime = performance.now(); 
     let animId;
     
-    // ระบบคะแนน หัวใจ คอมโบ
     let score = 0;
     let combo = 0;
-    let baseLives = 3; // 🌟 ฐานของหัวใจที่เริ่มต้น
-    let lives = baseLives; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ
-    let tempLives = 0; // หัวใจชั่วคราว
-    let peekCount = 0; // ไอเทมแอบดู
-    let nextLevelScoreMultiplier = 1; // คูณคะแนนพิเศษด่านถัดไป
+    let baseLives = 3; // ต้นทุนหัวใจ
+    let lives = baseLives; 
+    let tempLives = 0; 
+    let peekCount = 0; 
+    let nextLevelScoreMultiplier = 1; 
     let currentScoreMultiplier = 1;
 
     let layout = { cw: 0, ch: 0, startX: 0, startY: 0, padding: 12, cols: 4, rows: 2 }; 
@@ -324,17 +311,13 @@
     let shuffleSequence = 0; let maxShuffles = 0; let shuffleProgress = 0;
 
     class FloatingText {
-        constructor(x, y, text, color) {
-            this.x = x; this.y = y; this.text = text; this.color = color;
-            this.life = 1.0; this.vy = -50;
-        }
+        constructor(x, y, text, color) { this.x = x; this.y = y; this.text = text; this.color = color; this.life = 1.0; this.vy = -50; }
         update(dt) { this.y += this.vy * dt; this.life -= dt; }
         draw(ctx) {
             ctx.save(); ctx.globalAlpha = Math.max(0, this.life);
             ctx.fillStyle = this.color; ctx.font = "900 24px Prompt";
             ctx.textAlign = "center"; ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 4;
-            ctx.fillText(this.text, this.x, this.y);
-            ctx.restore();
+            ctx.fillText(this.text, this.x, this.y); ctx.restore();
         }
     }
 
@@ -371,67 +354,35 @@
                 }
             } else {
                 const img = images.cardBack;
-                if (img && img.complete && img.naturalWidth > 0) { 
-                    ctx.drawImage(img, this.x, this.y, layout.cw, layout.ch); 
-                } else {
-                    ctx.fillStyle = '#ffffff'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); 
-                }
+                if (img && img.complete && img.naturalWidth > 0) { ctx.drawImage(img, this.x, this.y, layout.cw, layout.ch); } else { ctx.fillStyle = '#ffffff'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); }
                 ctx.lineWidth = 4; ctx.strokeStyle = 'var(--isuzu-red)'; ctx.beginPath(); ctx.roundRect(this.x, this.y, layout.cw, layout.ch, 12); ctx.stroke();
             }
             ctx.restore();
         }
         drawIcon(ctx) {
-            let imgToDraw = null; 
-            if (this.type === 1) imgToDraw = images.type1; 
-            else if (this.type === 2) imgToDraw = images.type2; 
-            else if (this.type === 3) imgToDraw = images.type3; 
-            else if (this.type === 4) imgToDraw = images.type4;
-
-            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth > 0) { 
-                ctx.drawImage(imgToDraw, this.x, this.y, layout.cw, layout.ch); 
-            } else { 
-                ctx.fillStyle = '#f9f9f9'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); 
-            }
+            let imgToDraw = null; if (this.type === 1) imgToDraw = images.type1; else if (this.type === 2) imgToDraw = images.type2; else if (this.type === 3) imgToDraw = images.type3; else if (this.type === 4) imgToDraw = images.type4;
+            if (imgToDraw && imgToDraw.complete && imgToDraw.naturalWidth > 0) { ctx.drawImage(imgToDraw, this.x, this.y, layout.cw, layout.ch); } else { ctx.fillStyle = '#f9f9f9'; ctx.fillRect(this.x, this.y, layout.cw, layout.ch); }
         }
         update(dt) { if (this.flipping) { this.scaleX -= FLIP_ANIM_SPEED * dt; if (this.scaleX <= 0) { this.scaleX = 0; this.state = this.targetState; this.flipping = false; } } else if (this.scaleX < 1) { this.scaleX += FLIP_ANIM_SPEED * dt; if (this.scaleX > 1) this.scaleX = 1; } if (this.state === 'matched' && this.matchedAnimTimer > 0) this.matchedAnimTimer -= dt; }
         flip(newState, silent = false) { if (this.state !== newState && !this.flipping) { this.targetState = newState; this.flipping = true; if(newState === 'faceup' && !silent) sfxFlip(); } }
     }
 
     function resizeCanvas() { 
-        const rect = canvasWrapper.getBoundingClientRect(); 
-        const dpr = window.devicePixelRatio || 1;
+        const rect = canvasWrapper.getBoundingClientRect(); const dpr = window.devicePixelRatio || 1;
         logicalWidth = rect.width; logicalHeight = rect.height;
-
         canvas.width = logicalWidth * dpr; canvas.height = logicalHeight * dpr; 
         canvas.style.width = logicalWidth + 'px'; canvas.style.height = logicalHeight + 'px';
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.scale(dpr, dpr);
-        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-
-        calcGrid(); 
-        cards.forEach(c => { 
-            c.updatePositionFromGrid(); 
-            if (gameState !== 'shuffling') { c.x = c.targetX; c.y = c.targetY; } 
-        }); 
-        draw(); 
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.scale(dpr, dpr); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        calcGrid(); cards.forEach(c => { c.updatePositionFromGrid(); if (gameState !== 'shuffling') { c.x = c.targetX; c.y = c.targetY; } }); draw(); 
     }
 
     function calcGrid() {
-        layout.cols = 4; layout.rows = 2; 
-        layout.padding = Math.min(logicalWidth * 0.04, 20); 
-        const availableW = logicalWidth - (layout.padding * (layout.cols + 1)); 
-        const availableH = logicalHeight - (layout.padding * (layout.rows + 1)); 
+        layout.cols = 4; layout.rows = 2; layout.padding = Math.min(logicalWidth * 0.04, 20); 
+        const availableW = logicalWidth - (layout.padding * (layout.cols + 1)); const availableH = logicalHeight - (layout.padding * (layout.rows + 1)); 
         layout.cw = availableW / layout.cols; layout.ch = availableH / layout.rows;
-        
-        const targetAspect = 1.25; 
-        if (layout.cw * targetAspect > layout.ch) layout.cw = layout.ch / targetAspect; 
-        else layout.ch = layout.cw * targetAspect; 
-        
-        const maxW = 180; 
-        if (layout.cw > maxW) { layout.cw = maxW; layout.ch = maxW * targetAspect; }
-        
-        const totalW = layout.cols * layout.cw + (layout.cols - 1) * layout.padding; 
-        const totalH = layout.rows * layout.ch + (layout.rows - 1) * layout.padding; 
+        const targetAspect = 1.25; if (layout.cw * targetAspect > layout.ch) layout.cw = layout.ch / targetAspect; else layout.ch = layout.cw * targetAspect; 
+        const maxW = 180; if (layout.cw > maxW) { layout.cw = maxW; layout.ch = maxW * targetAspect; }
+        const totalW = layout.cols * layout.cw + (layout.cols - 1) * layout.padding; const totalH = layout.rows * layout.ch + (layout.rows - 1) * layout.padding; 
         layout.startX = (logicalWidth - totalW) / 2; layout.startY = (logicalHeight - totalH) / 2; 
     }
 
@@ -449,7 +400,7 @@
 
     function resetFullGame() { 
         level = 1; globalTime = 0; score = 0; combo = 0; 
-        baseLives = 3; // 🌟 รีเซ็ตหัวใจต้นทุนเป็น 3 ใหม่ทุกครั้งที่กดเริ่มเล่นใหม่
+        baseLives = 3; 
         lives = baseLives; 
         tempLives = 0; 
         peekCount = 0;
@@ -464,7 +415,7 @@
         currentScoreMultiplier = nextLevelScoreMultiplier;
         nextLevelScoreMultiplier = 1;
         
-        lives = baseLives; // 🌟 รีเซ็ตหัวใจให้เต็มโควต้าต้นทุน (รวมที่บวกถาวรมา) ทุกครั้งที่เริ่มด่านใหม่
+        lives = baseLives; // รีเซ็ตหัวใจให้เต็มโควต้าต้นทุนทุกครั้งที่เริ่มด่านใหม่
 
         const bgIndex = Math.min(level - 1, levelBackgrounds.length - 1); container.style.background = levelBackgrounds[bgIndex]; 
         updateHUD(); startBGM();
@@ -487,42 +438,32 @@
         gameState = 'wait'; stateTimer = 0.6; const [c1, c2] = selectedCards; 
         if (c1.type === c2.type) { 
             matchesFound++; stateTimer = 0.3; combo++; 
-            
-            // การคิดคะแนน (Base 100 * Combo * Multiplier)
             const pts = Math.floor(100 * combo * currentScoreMultiplier);
             score += pts;
             floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y, `+${pts}`, "#4CAF50"));
             if(combo > 1) floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y - 30, `COMBO x${combo}!`, "#FF8C00"));
-
-            sfxMatch(combo); 
-            setTimeout(() => { spawnParticles(c1.x + layout.cw/2, c1.y + layout.ch/2); spawnParticles(c2.x + layout.cw/2, c2.y + layout.ch/2); }, 100); 
+            sfxMatch(combo); setTimeout(() => { spawnParticles(c1.x + layout.cw/2, c1.y + layout.ch/2); spawnParticles(c2.x + layout.cw/2, c2.y + layout.ch/2); }, 100); 
         } else { 
-            combo = 0;
-            sfxMismatch(); 
-            // หักหัวใจ
+            combo = 0; sfxMismatch(); 
             if (tempLives > 0) tempLives--; else lives--;
             floatingTexts.push(new FloatingText(c2.x + layout.cw/2, c2.y, "Miss!", "#ED1A3B"));
         } 
         updateHUD(); 
-
-        // ตรวจสอบตาย
-        if (lives <= 0) {
-            setTimeout(() => { gameOver(); }, 500);
-        }
     }
     
     function resolveMatch() { 
-        if (lives <= 0) return; // ถ้าตายแล้วไม่ต้องทำต่อ
         const [c1, c2] = selectedCards; 
         if (c1.type === c2.type) { 
             c1.state = 'matched'; c2.state = 'matched'; c1.matchedAnimTimer = 0.5; c2.matchedAnimTimer = 0.5; 
-            if (matchesFound >= 4) {
-                setTimeout(levelComplete, 500); 
+            if (matchesFound >= 4) { setTimeout(levelComplete, 500); } else { gameState = 'playing'; }
+        } else { 
+            c1.flip('facedown'); c2.flip('facedown'); 
+            // 🌟 แก้บักเกมโอเวอร์: รอให้ไพ่พลิกกลับเสร็จและหัวใจลดในจอให้เห็นก่อน ค่อย Game Over
+            if (lives <= 0) {
+                setTimeout(gameOver, 300); 
             } else {
                 gameState = 'playing'; 
             }
-        } else { 
-            c1.flip('facedown'); c2.flip('facedown'); gameState = 'playing'; 
         } 
         selectedCards = []; 
     }
@@ -530,28 +471,21 @@
     function gameOver() {
         stopBGM(); playTone(150, 'sawtooth', 1.0, 0.2);
         gameState = 'gameover'; hudContainer.style.display = 'none';
-        
         document.getElementById('lose-time').innerText = formatTime(globalTime);
         document.getElementById('lose-score').innerText = score;
-        
         drawFinalCanvasState("GAME OVER", score);
         showScreen('screen-gameover');
     }
 
     function levelComplete() {
         if (level === TOTAL_LEVELS) {
-            stopBGM(); sfxWin(); 
-            gameState = 'gamewin'; 
-            hudContainer.style.display = 'none'; 
-            
+            stopBGM(); sfxWin(); gameState = 'gamewin'; hudContainer.style.display = 'none'; 
             document.getElementById('win-time').innerText = formatTime(globalTime);
             document.getElementById('win-score').innerText = score;
             for(let i=0; i<6; i++) setTimeout(() => spawnParticles(logicalWidth * Math.random(), logicalHeight, 50), i*250);
-
             drawFinalCanvasState("MISSION COMPLETE", score);
             showScreen('screen-win');
         } else {
-            // โชว์กล่องสุ่มก่อนไปด่านถัดไป
             tempLives = 0; // ล้างหัวใจชั่วคราวทิ้งทุกจบด่าน
             showMysteryBox();
         }
@@ -570,22 +504,38 @@
         sfxReward();
         document.getElementById('mystery-box-btn').style.display = 'none';
         
-        const rewards = [
-            { id: 1, text: "🎉 คะแนนคูณ 2 ในด่านถัดไป!" },
-            { id: 2, text: "❤️ ได้รับโอกาสผิดพลาดเพิ่มถาวร 1 ครั้ง!" },
-            { id: 3, text: "🛡️ ได้รับโอกาสผิดพลาดฟรี 1 ครั้ง (เฉพาะด่านหน้า)!" },
-            { id: 4, text: "👁️ ได้รับตัวช่วยแอบดูไพ่ 1 ครั้ง!" }
-        ];
+        // 🌟 ตั้งค่าความน่าจะเป็น (เรทกาชา)
+        const rand = Math.random() * 100;
+        let rewardId;
         
-        const reward = rewards[Math.floor(Math.random() * rewards.length)];
+        if (rand < 50) {
+            rewardId = 1; // 50%: คะแนนคูณ
+        } else if (rand < 80) {
+            rewardId = 3; // 30%: หัวใจชั่วคราว
+        } else if (rand < 95) {
+            rewardId = 2; // 15%: หัวใจถาวร
+        } else {
+            rewardId = 4; // 5%: ตัวช่วยแอบดูไพ่
+        }
+
+        let rewardText = "";
         
-        if (reward.id === 1) nextLevelScoreMultiplier = 2;
-        if (reward.id === 2) { baseLives++; lives = baseLives; } // 🌟 อัปเดตฐานหัวใจให้เยอะขึ้นถาวร
-        if (reward.id === 3) tempLives++;
-        if (reward.id === 4) peekCount++;
+        if (rewardId === 1) {
+            nextLevelScoreMultiplier = 2;
+            rewardText = "🎉 คะแนนด่านหน้า x2!";
+        } else if (rewardId === 2) {
+            baseLives++; lives = baseLives;
+            rewardText = "❤️ โอกาสผิดถาวร +1!";
+        } else if (rewardId === 3) {
+            tempLives++;
+            rewardText = "💙 โอกาสผิดชั่วคราว +1 (ด่านหน้า)!";
+        } else if (rewardId === 4) {
+            peekCount++;
+            rewardText = "👁️ ตัวช่วยเปิดไพ่ 1 คู่!";
+        }
 
         const rewardTextEl = document.getElementById('reward-text');
-        rewardTextEl.innerText = reward.text;
+        rewardTextEl.innerText = rewardText;
         rewardTextEl.style.display = 'block';
         rewardTextEl.style.animation = 'popIn 0.5s ease forwards';
         
@@ -593,59 +543,64 @@
         updateHUD();
     }
 
-    function continueToNextLevel() {
-        level++; 
-        hideAllScreens();
-        startLevel();
-    }
+    function continueToNextLevel() { level++; hideAllScreens(); startLevel(); }
 
-    // --- Peek Feature ---
+    // --- Peek Feature (🌟 แอบดูไพ่แค่ 1 คู่) ---
     function usePeek() {
         if (gameState !== 'playing' || peekCount <= 0) return;
-        peekCount--;
-        sfxReward();
-        updateHUD();
-        gameState = 'peeking';
         
+        // หาไพ่ที่คว่ำอยู่ทั้งหมด
         let hiddenCards = cards.filter(c => c.state === 'facedown' && !selectedCards.includes(c));
-        hiddenCards.forEach(c => c.flip('faceup', true));
+        if (hiddenCards.length < 2) return; // ถ้าไพ่น้อยกว่า 2 ใบ ไม่ทำงาน
+
+        peekCount--; sfxReward(); updateHUD(); gameState = 'peeking';
         
-        setTimeout(() => {
-            hiddenCards.forEach(c => c.flip('facedown', true));
+        // จับกลุ่มไพ่ที่ยังไม่ถูกเปิดตามประเภท (Type)
+        let typeMap = {};
+        hiddenCards.forEach(c => {
+            if (!typeMap[c.type]) typeMap[c.type] = [];
+            typeMap[c.type].push(c);
+        });
+
+        // สุ่มหา 1 คู่ที่มีครบ 2 ใบ
+        let pairToReveal = null;
+        let availableTypes = Object.keys(typeMap).filter(t => typeMap[t].length === 2);
+        
+        if (availableTypes.length > 0) {
+            let randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+            pairToReveal = typeMap[randomType];
+        }
+
+        if (pairToReveal) {
+            // เปิดไพ่ 1 คู่โชว์
+            pairToReveal.forEach(c => c.flip('faceup', true));
+            setTimeout(() => {
+                // พลิกกลับหลังจากผ่านไป 1.5 วินาที
+                pairToReveal.forEach(c => c.flip('facedown', true));
+                gameState = 'playing';
+            }, 1500);
+        } else {
+            // สำรองในกรณีฉุกเฉิน
             gameState = 'playing';
-        }, 1500);
+        }
     }
 
     /** --- UPDATE & DRAW --- */
     function updateHUD() { 
-        hudEls.level.innerText = Math.min(level, 5); 
-        hudEls.score.innerText = score;
-        hudEls.combo.innerText = combo > 1 ? `x${combo}` : '';
-        hudEls.lives.innerText = '❤️'.repeat(lives) + '💙'.repeat(tempLives);
-        hudEls.time.innerText = formatTime(globalTime);
-        
-        if (peekCount > 0) {
-            peekBtn.style.display = 'flex';
-            peekBadge.innerText = peekCount;
-        } else {
-            peekBtn.style.display = 'none';
-        }
+        hudEls.level.innerText = Math.min(level, 5); hudEls.score.innerText = score; hudEls.combo.innerText = combo > 1 ? `x${combo}` : '';
+        hudEls.lives.innerText = '❤️'.repeat(lives) + '💙'.repeat(tempLives); hudEls.time.innerText = formatTime(globalTime);
+        if (peekCount > 0) { peekBtn.style.display = 'flex'; peekBadge.innerText = peekCount; } else { peekBtn.style.display = 'none'; }
     }
     
     function update(dt) {
-        if (['memorize', 'shuffling', 'playing', 'wait', 'peeking'].includes(gameState)) { 
-            globalTime += dt; 
-            hudEls.time.innerText = formatTime(globalTime);
-        }
-
-        cards.forEach(c => c.update(dt)); 
-        for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1); }
+        if (['memorize', 'shuffling', 'playing', 'wait', 'peeking'].includes(gameState)) { globalTime += dt; hudEls.time.innerText = formatTime(globalTime); }
+        cards.forEach(c => c.update(dt)); for (let i = particles.length - 1; i >= 0; i--) { particles[i].update(dt); if (particles[i].life <= 0) particles.splice(i, 1); }
         for (let i = floatingTexts.length - 1; i >= 0; i--) { floatingTexts[i].update(dt); if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1); }
 
         if (gameState === 'memorize') { stateTimer -= dt; let progress = Math.max(0, stateTimer / MEMORIZE_TIME); memBar.style.width = `${progress * 100}%`; if (stateTimer <= 0) { cards.forEach(c => c.flip('facedown')); gameState = 'wait'; stateTimer = 0.5; } } 
         else if (gameState === 'wait' && selectedCards.length === 0) { stateTimer -= dt; if (stateTimer <= 0) startShuffleSequence(); } 
         else if (gameState === 'shuffling') { shuffleProgress += dt / SHUFFLE_DURATION; let p = Math.min(shuffleProgress, 1.0); let easeP = easeInOutQuad(p); cards.forEach(c => { c.x = c.prevX + (c.targetX - c.prevX) * easeP; c.y = c.prevY + (c.targetY - c.prevY) * easeP; }); if (p >= 1.0) executeShuffleStep(); } 
-        else if (gameState === 'wait' && selectedCards.length === 2 && lives > 0) { stateTimer -= dt; if (stateTimer <= 0) resolveMatch(); }
+        else if (gameState === 'wait' && selectedCards.length === 2) { stateTimer -= dt; if (stateTimer <= 0) resolveMatch(); }
     }
 
     function draw() {
@@ -654,53 +609,36 @@
             const sortedCards = [...cards].sort((a,b) => { if(a.flipping || b.flipping) return a.flipping ? 1 : -1; return 0; }); 
             sortedCards.forEach(c => c.draw(ctx)); 
         }
-        particles.forEach(p => p.draw(ctx));
-        floatingTexts.forEach(t => t.draw(ctx));
+        particles.forEach(p => p.draw(ctx)); floatingTexts.forEach(t => t.draw(ctx));
     }
 
     function gameLoop(timestamp) { const dt = Math.min((timestamp - lastTime) / 1000, 0.1); lastTime = timestamp; update(dt); draw(); animId = requestAnimationFrame(gameLoop); }
 
     function drawFinalCanvasState(titleText, finalScore) {
-        const bgImages = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg']; // ใส่ภาพ bg จริงของเกม
+        const bgImages = ['bg1.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg']; 
         const selectedBgSrc = bgImages[Math.floor(Math.random() * bgImages.length)];
-        const bgImg = new Image();
-        bgImg.src = selectedBgSrc;
+        const bgImg = new Image(); bgImg.src = selectedBgSrc;
 
         bgImg.onload = function() {
             ctx.clearRect(0, 0, logicalWidth, logicalHeight);
-            const canvasRatio = logicalWidth / logicalHeight;
-            const imgRatio = bgImg.width / bgImg.height;
+            const canvasRatio = logicalWidth / logicalHeight; const imgRatio = bgImg.width / bgImg.height;
             let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-
             if (canvasRatio > imgRatio) { drawWidth = logicalWidth; drawHeight = logicalWidth / imgRatio; offsetY = (logicalHeight - drawHeight) / 2; } 
             else { drawHeight = logicalHeight; drawWidth = logicalHeight * imgRatio; offsetX = (logicalWidth - drawWidth) / 2; }
             
             ctx.drawImage(bgImg, offsetX, offsetY, drawWidth, drawHeight);
             ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-
             ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 4; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
             ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
 
-            ctx.fillStyle = '#FFD700'; ctx.font = 'bold 28px Prompt';
-            ctx.fillText('สถิติของคุณ', logicalWidth/2, logicalHeight * 0.15);
+            ctx.fillStyle = '#FFD700'; ctx.font = 'bold 28px Prompt'; ctx.fillText('สถิติของคุณ', logicalWidth/2, logicalHeight * 0.15);
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 24px Prompt'; ctx.fillText('Player: ' + playerName, logicalWidth/2, logicalHeight * 0.22);
+            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; ctx.font = 'bold 36px Prompt'; ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
 
-            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 24px Prompt';
-            ctx.fillText('Player: ' + playerName, logicalWidth/2, logicalHeight * 0.22);
-
-            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; 
-            ctx.font = 'bold 36px Prompt';
-            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
-
-            // แสดงคะแนนรวม
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 60px Prompt'; 
-            ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); 
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 60px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); 
             ctx.font = 'bold 20px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.52);
 
-            // แสดงเวลาที่ใช้ไป
-            ctx.fillStyle = '#FFD700';
-            ctx.font = 'bold 40px Prompt'; 
-            ctx.fillText(formatTime(globalTime), logicalWidth/2, logicalHeight * 0.64); 
+            ctx.fillStyle = '#FFD700'; ctx.font = 'bold 40px Prompt'; ctx.fillText(formatTime(globalTime), logicalWidth/2, logicalHeight * 0.64); 
             ctx.font = 'bold 18px Prompt'; ctx.fillText('เวลาที่ใช้', logicalWidth/2, logicalHeight * 0.69);
 
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
@@ -709,14 +647,9 @@
 
         bgImg.onerror = function() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; ctx.font = 'bold 36px Prompt'; ctx.textAlign = 'center';
-            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
-            
-            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 60px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); 
-            ctx.font = 'bold 20px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.52);
-            
+            ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; ctx.font = 'bold 36px Prompt'; ctx.textAlign = 'center'; ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 60px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); ctx.font = 'bold 20px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.52);
             ctx.fillStyle = '#FFD700'; ctx.font = 'bold 40px Prompt'; ctx.fillText(formatTime(globalTime), logicalWidth/2, logicalHeight * 0.64); 
-            
             try { finalImageDataUrl = canvas.toDataURL("image/jpeg", 0.95); } catch (e) {}
         };
     }
@@ -725,22 +658,10 @@
         if (!finalImageDataUrl) { showToast("กำลังเตรียมภาพ รอสักครู่นะครับ..."); return; }
         try {
             const modal = document.createElement('div');
-            modal.style.position = 'fixed'; modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%';
-            modal.style.backgroundColor = 'rgba(0,0,0,0.95)'; modal.style.zIndex = '9999'; modal.style.display = 'flex'; modal.style.flexDirection = 'column'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center'; modal.style.padding = '20px';
-            
-            const text = document.createElement('p');
-            text.innerHTML = "👇 <b>แตะค้างที่รูปภาพ</b> เพื่อบันทึกลงเครื่อง 👇<br><span style='font-size:14px; color:#aaa;'>(ถ้าเล่นบนคอมพิวเตอร์ คลิกขวา > Save image as)</span>";
-            text.style.color = '#FFD700'; text.style.fontFamily = 'Prompt, sans-serif'; text.style.fontSize = '18px'; text.style.marginBottom = '20px'; text.style.textAlign = 'center';
-            
-            const img = document.createElement('img');
-            img.src = finalImageDataUrl;
-            img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; img.style.borderRadius = '10px'; img.style.boxShadow = '0 0 20px rgba(255,255,255,0.2)';
-            
-            const closeBtn = document.createElement('button');
-            closeBtn.innerText = "✖ ปิดหน้าต่างนี้";
-            closeBtn.style.marginTop = '25px'; closeBtn.style.padding = '12px 30px'; closeBtn.style.background = '#ED1A3B'; closeBtn.style.color = 'white'; closeBtn.style.border = 'none'; closeBtn.style.borderRadius = '10px'; closeBtn.style.fontFamily = 'Prompt, sans-serif'; closeBtn.style.fontSize = '18px'; closeBtn.style.fontWeight = 'bold';
-            closeBtn.onclick = () => document.body.removeChild(modal);
-            
+            modal.style.position = 'fixed'; modal.style.top = '0'; modal.style.left = '0'; modal.style.width = '100%'; modal.style.height = '100%'; modal.style.backgroundColor = 'rgba(0,0,0,0.95)'; modal.style.zIndex = '9999'; modal.style.display = 'flex'; modal.style.flexDirection = 'column'; modal.style.alignItems = 'center'; modal.style.justifyContent = 'center'; modal.style.padding = '20px';
+            const text = document.createElement('p'); text.innerHTML = "👇 <b>แตะค้างที่รูปภาพ</b> เพื่อบันทึกลงเครื่อง 👇<br><span style='font-size:14px; color:#aaa;'>(ถ้าเล่นบนคอมพิวเตอร์ คลิกขวา > Save image as)</span>"; text.style.color = '#FFD700'; text.style.fontFamily = 'Prompt, sans-serif'; text.style.fontSize = '18px'; text.style.marginBottom = '20px'; text.style.textAlign = 'center';
+            const img = document.createElement('img'); img.src = finalImageDataUrl; img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; img.style.borderRadius = '10px'; img.style.boxShadow = '0 0 20px rgba(255,255,255,0.2)';
+            const closeBtn = document.createElement('button'); closeBtn.innerText = "✖ ปิดหน้าต่างนี้"; closeBtn.style.marginTop = '25px'; closeBtn.style.padding = '12px 30px'; closeBtn.style.background = '#ED1A3B'; closeBtn.style.color = 'white'; closeBtn.style.border = 'none'; closeBtn.style.borderRadius = '10px'; closeBtn.style.fontFamily = 'Prompt, sans-serif'; closeBtn.style.fontSize = '18px'; closeBtn.style.fontWeight = 'bold'; closeBtn.onclick = () => document.body.removeChild(modal);
             modal.appendChild(text); modal.appendChild(img); modal.appendChild(closeBtn); document.body.appendChild(modal);
         } catch (err) { console.error("Save popup error:", err); showToast("เกิดข้อผิดพลาดในการแสดงภาพ"); }
     }

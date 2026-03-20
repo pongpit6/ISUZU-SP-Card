@@ -20,7 +20,7 @@
             padding: 0; 
             user-select: none; 
             font-family: 'Prompt', sans-serif; 
-            touch-action: none; /* ป้องกันการเผลอเลื่อนจอหรือซูม */
+            touch-action: none; 
         }
 
         /* 🌟 2. ล็อคขนาดจอและป้องกันการเลื่อนหลุด */
@@ -49,8 +49,8 @@
             position: relative; 
             width: 100%; 
             height: 100%; 
-            max-width: 500px;  /* ขนาดความกว้างสูงสุดให้ดูเป็นสัดส่วนมือถือ */
-            max-height: 850px; /* ขนาดความสูงสุด ป้องกันจอคอมหรือแท็บเล็ตดึงภาพยาวเกิน */
+            max-width: 500px; 
+            max-height: 850px; 
             background: linear-gradient(135deg, #ABDCFF 10%, #0396FF 100%); 
             box-shadow: 0 0 30px rgba(0,0,0,0.8); 
             display: flex; 
@@ -140,11 +140,12 @@
     <div id="hud-container">
         <div class="hud-row">
             <div class="hud-item left"><span class="label">ผู้เล่น</span><span class="val" id="hud-name" style="font-size: 0.9rem;">Player</span></div>
-            <div class="hud-item center"><span class="label">คะแนน</span><span class="val highlight" id="hud-score">0</span></div>
+            <div class="hud-item center"><span class="label">เวลา</span><span class="val highlight" id="hud-time">0:00.000</span></div>
             <div class="hud-item right" style="padding-right: 30px;"><span class="label">ระดับ</span><span class="val">Lv.<span id="hud-level">1</span>/5</span></div>
         </div>
         <div class="hud-row" style="padding-top: 0; border-top: 1px dashed #eee; margin-top: -5px;">
-            <div class="hud-item left"><span class="label">โอกาส (ผิดได้ 2 ครั้ง)</span><span class="val" id="hud-lives" style="font-size: 1.2rem;">❤️❤️❤️</span></div>
+            <div class="hud-item left"><span class="label">โอกาส</span><span class="val" id="hud-lives" style="font-size: 1.1rem;">❤️❤️❤️</span></div>
+            <div class="hud-item center"><span class="label">คะแนน</span><span class="val highlight" id="hud-score" style="font-size: 1.2rem;">0</span></div>
             <div class="hud-item right"><span class="label">Combo</span><span class="val" id="hud-combo" style="color: #FF8C00;">x1</span></div>
         </div>
         <button id="btn-mute" onclick="toggleMute()">🔊</button>
@@ -179,7 +180,8 @@
                         <li><strong>2. จับคู่:</strong> เปิดไพ่ทีละ 2 ใบเพื่อจับคู่ภาพที่เหมือนกัน</li>
                         <li><strong>3. โอกาสจำกัด:</strong> พลาดได้ <strong style="color:red;">2 ครั้ง</strong> (มี 3 หัวใจ) หัวใจหมด = เกมโอเวอร์</li>
                         <li><strong>4. COMBO:</strong> จับคู่ถูกติดต่อกัน คะแนนจะยิ่งคูณเยอะขึ้น!</li>
-                        <li><strong>5. กล่องสุ่ม:</strong> ผ่านด่านรับสุ่มไอเทมตัวช่วยหรือหัวใจฟรี</li>
+                        <li><strong>5. ความเร็ว:</strong> ทำเวลาให้น้อยที่สุดเพื่อสถิติที่ดี!</li>
+                        <li><strong>6. กล่องสุ่ม:</strong> ผ่านด่านรับสุ่มไอเทมตัวช่วยหรือหัวใจฟรี</li>
                     </ul>
                     <button class="btn" onclick="showScreen('screen-name')">กลับ (BACK)</button>
                 </div>
@@ -204,7 +206,9 @@
                 <div class="modal modal-scrollable">
                     <h1 class="logo-title" style="margin-bottom: 5px;"><span style="color: #4CAF50;">MISSION COMPLETE!</span></h1>
                     <div class="promo-highlight">เข้าศูนย์ "อีซูซุสหะภัณฑ์ไม่ต้องรอนาน"</div>
-                    <div class="stats-text" style="margin-bottom: 5px;">คะแนนรวมของคุณ: <br><span class="stats-highlight" id="win-score" style="font-size: 2.5rem;">0</span></div>
+                    
+                    <div class="stats-text" style="margin-bottom: 5px;">เวลาที่ใช้: <span class="stats-highlight" id="win-time">0:00.000</span></div>
+                    <div class="stats-text" style="margin-bottom: 5px;">คะแนนรวม: <span class="stats-highlight" id="win-score" style="font-size: 2.2rem;">0</span></div>
 
                     <div id="end-game-actions" style="margin-top: 15px;">
                         <button class="btn btn-success" onclick="saveScoreImage()">บันทึกรูปภาพสถิติ</button>
@@ -218,7 +222,9 @@
                 <div class="modal">
                     <h1 class="logo-title" style="margin-bottom: 5px;"><span style="color: var(--isuzu-red);">GAME OVER</span></h1>
                     <p style="color: #666; margin-bottom: 15px;">คุณใช้โอกาส (หัวใจ) หมดแล้ว!</p>
-                    <div class="stats-text" style="margin-bottom: 15px;">คะแนนที่ทำได้: <br><span class="stats-highlight" id="lose-score" style="font-size: 2.2rem;">0</span></div>
+                    
+                    <div class="stats-text" style="margin-bottom: 5px;">เวลาที่ใช้: <span class="stats-highlight" id="lose-time">0:00.000</span></div>
+                    <div class="stats-text" style="margin-bottom: 15px;">คะแนนรวม: <span class="stats-highlight" id="lose-score" style="font-size: 2.2rem;">0</span></div>
 
                     <button class="btn btn-success" onclick="saveScoreImage()">บันทึกรูปภาพสถิติ</button>
                     <button class="btn" onclick="resetFullGame()">ลองใหม่อีกครั้ง</button>
@@ -280,7 +286,14 @@
     };
     const toastEl = document.getElementById('toast'); 
     const hudContainer = document.getElementById('hud-container'); 
-    const hudEls = { name: document.getElementById('hud-name'), level: document.getElementById('hud-level'), score: document.getElementById('hud-score'), lives: document.getElementById('hud-lives'), combo: document.getElementById('hud-combo') };
+    const hudEls = { 
+        name: document.getElementById('hud-name'), 
+        level: document.getElementById('hud-level'), 
+        score: document.getElementById('hud-score'), 
+        lives: document.getElementById('hud-lives'), 
+        combo: document.getElementById('hud-combo'),
+        time: document.getElementById('hud-time')
+    };
     const memBarContainer = document.getElementById('memorize-bar-container'); const memBar = document.getElementById('memorize-bar');
     const peekBtn = document.getElementById('btn-peek'); const peekBadge = document.getElementById('peek-badge');
 
@@ -299,7 +312,7 @@
     // ระบบคะแนน หัวใจ คอมโบ
     let score = 0;
     let combo = 0;
-    let lives = 3; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ (พลาดครั้งที่ 3 ตาย)
+    let lives = 3; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ
     let tempLives = 0; // หัวใจชั่วคราว
     let peekCount = 0; // ไอเทมแอบดู
     let nextLevelScoreMultiplier = 1; // คูณคะแนนพิเศษด่านถัดไป
@@ -444,7 +457,7 @@
     function startLevel() {
         matchesFound = 0; selectedCards = []; cards = []; floatingTexts = [];
         currentScoreMultiplier = nextLevelScoreMultiplier;
-        nextLevelScoreMultiplier = 1; // reset for next use
+        nextLevelScoreMultiplier = 1;
 
         const bgIndex = Math.min(level - 1, levelBackgrounds.length - 1); container.style.background = levelBackgrounds[bgIndex]; 
         updateHUD(); startBGM();
@@ -510,7 +523,10 @@
     function gameOver() {
         stopBGM(); playTone(150, 'sawtooth', 1.0, 0.2);
         gameState = 'gameover'; hudContainer.style.display = 'none';
+        
+        document.getElementById('lose-time').innerText = formatTime(globalTime);
         document.getElementById('lose-score').innerText = score;
+        
         drawFinalCanvasState("GAME OVER", score);
         showScreen('screen-gameover');
     }
@@ -521,6 +537,7 @@
             gameState = 'gamewin'; 
             hudContainer.style.display = 'none'; 
             
+            document.getElementById('win-time').innerText = formatTime(globalTime);
             document.getElementById('win-score').innerText = score;
             for(let i=0; i<6; i++) setTimeout(() => spawnParticles(logicalWidth * Math.random(), logicalHeight, 50), i*250);
 
@@ -598,6 +615,7 @@
         hudEls.score.innerText = score;
         hudEls.combo.innerText = combo > 1 ? `x${combo}` : '';
         hudEls.lives.innerText = '❤️'.repeat(lives) + '💙'.repeat(tempLives);
+        hudEls.time.innerText = formatTime(globalTime);
         
         if (peekCount > 0) {
             peekBtn.style.display = 'flex';
@@ -610,6 +628,7 @@
     function update(dt) {
         if (['memorize', 'shuffling', 'playing', 'wait', 'peeking'].includes(gameState)) { 
             globalTime += dt; 
+            hudEls.time.innerText = formatTime(globalTime);
         }
 
         cards.forEach(c => c.update(dt)); 
@@ -663,12 +682,19 @@
 
             ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; 
             ctx.font = 'bold 36px Prompt';
-            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.35);
+            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
 
+            // แสดงคะแนนรวม
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 80px Prompt'; 
-            ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.48); 
-            ctx.font = 'bold 24px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.58);
+            ctx.font = 'bold 60px Prompt'; 
+            ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); 
+            ctx.font = 'bold 20px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.52);
+
+            // แสดงเวลาที่ใช้ไป
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 40px Prompt'; 
+            ctx.fillText(formatTime(globalTime), logicalWidth/2, logicalHeight * 0.64); 
+            ctx.font = 'bold 18px Prompt'; ctx.fillText('เวลาที่ใช้', logicalWidth/2, logicalHeight * 0.69);
 
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
             try { finalImageDataUrl = canvas.toDataURL("image/jpeg", 0.95); } catch (e) { console.error("แคปภาพล้มเหลว:", e); }
@@ -677,8 +703,13 @@
         bgImg.onerror = function() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.85)'; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
             ctx.fillStyle = titleText === "GAME OVER" ? '#ED1A3B' : '#10B981'; ctx.font = 'bold 36px Prompt'; ctx.textAlign = 'center';
-            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.35);
-            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 80px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.48); 
+            ctx.fillText(titleText, logicalWidth/2, logicalHeight * 0.33);
+            
+            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 60px Prompt'; ctx.fillText(finalScore, logicalWidth/2, logicalHeight * 0.45); 
+            ctx.font = 'bold 20px Prompt'; ctx.fillText('คะแนนรวม', logicalWidth/2, logicalHeight * 0.52);
+            
+            ctx.fillStyle = '#FFD700'; ctx.font = 'bold 40px Prompt'; ctx.fillText(formatTime(globalTime), logicalWidth/2, logicalHeight * 0.64); 
+            
             try { finalImageDataUrl = canvas.toDataURL("image/jpeg", 0.95); } catch (e) {}
         };
     }
@@ -709,7 +740,7 @@
 
     function copyReviewText() {
         const shareTexts = ["เอารถมาเข้าศูนย์ อีซูซุสหะภัณฑ์ นั่งเล่นเกมจับคู่ชิลๆ ลุ้นกินชาบูฟรีฟินๆ สิ้นเดือนนี้ ใครสายชาบูต้องมาจัดแล้วปะ! 🚗✨🍲\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน", "รอรถแบบไม่น่าเบื่ออีกต่อไป! เอาลูกรักมาเช็คระยะที่ อีซูซุสหะภัณฑ์ มีเกมจับคู่ให้เล่นเพลินๆ แถมได้ลุ้นชาบูไปกินสิ้นเดือนอี๊กก เริ่ดเกิ๊นนน 🎮🥩🚙\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน", "มาเข้าศูนย์ อีซูซุสหะภัณฑ์ ทั้งที จะนั่งรอเฉยๆ ได้ไง 😜 เล่นเกมจับคู่เพลินๆ ลุ้นคูปองชาบูกันไปเลยยยย 🥢🚗\n#อีซูซุสหะภัณฑ์กาญจนบุรี #อีซูซุสหะภัณฑ์ไม่ต้องรอนาน"];
-        let randomText = shareTexts[Math.floor(Math.random() * shareTexts.length)]; const fullText = `ผู้เล่น: ${playerName}\nคะแนนที่ทำได้: ${score} คะแนน!\n\n${randomText}`;
+        let randomText = shareTexts[Math.floor(Math.random() * shareTexts.length)]; const fullText = `ผู้เล่น: ${playerName}\nเวลาที่ใช้: ${formatTime(globalTime)}\nคะแนนที่ทำได้: ${score} คะแนน!\n\n${randomText}`;
         const textArea = document.createElement("textarea"); textArea.value = fullText; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; document.body.appendChild(textArea); textArea.focus(); textArea.select();
         try { document.execCommand('copy'); showToast("คัดลอกข้อความสำเร็จ! นำไปโพสต์ได้เลย"); } catch (err) { console.error('Copy fallback failed', err); showToast("อุปกรณ์นี้ไม่รองรับการคัดลอกอัตโนมัติ"); } document.body.removeChild(textArea);
     }

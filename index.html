@@ -190,10 +190,10 @@
             <div id="screen-mystery-box" class="screen hidden">
                 <div class="modal">
                     <h2 class="logo-title" style="font-size: 1.4rem; margin-bottom: 5px; color: var(--isuzu-red);">🎁 Mystery Box!</h2>
-                    <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">แตะที่กล่องเพื่อสุ่มรับรางวัลสำหรับด่านถัดไป</p>
+                    <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">แตะที่กล่องของขวัญเพื่อสุ่มรับรางวัลสำหรับด่านถัดไป</p>
                     
                     <div class="mystery-box-container" id="mystery-box-btn" onclick="openMysteryBox()">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3667/3667863.png" class="mystery-box-img" alt="Mystery Box">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041373.png" class="mystery-box-img" alt="Gift Box">
                     </div>
                     
                     <h3 id="reward-text" class="reward-text">ได้รับรางวัล!</h3>
@@ -312,7 +312,8 @@
     // ระบบคะแนน หัวใจ คอมโบ
     let score = 0;
     let combo = 0;
-    let lives = 3; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ
+    let baseLives = 3; // 🌟 ฐานของหัวใจที่เริ่มต้น
+    let lives = baseLives; // ผิดได้ 2 ครั้ง คือมี 3 หัวใจ
     let tempLives = 0; // หัวใจชั่วคราว
     let peekCount = 0; // ไอเทมแอบดู
     let nextLevelScoreMultiplier = 1; // คูณคะแนนพิเศษด่านถัดไป
@@ -447,7 +448,11 @@
     }
 
     function resetFullGame() { 
-        level = 1; globalTime = 0; score = 0; combo = 0; lives = 3; tempLives = 0; peekCount = 0;
+        level = 1; globalTime = 0; score = 0; combo = 0; 
+        baseLives = 3; // 🌟 รีเซ็ตหัวใจต้นทุนเป็น 3 ใหม่ทุกครั้งที่กดเริ่มเล่นใหม่
+        lives = baseLives; 
+        tempLives = 0; 
+        peekCount = 0;
         nextLevelScoreMultiplier = 1;
         finalImageDataUrl = ""; 
 
@@ -458,6 +463,8 @@
         matchesFound = 0; selectedCards = []; cards = []; floatingTexts = [];
         currentScoreMultiplier = nextLevelScoreMultiplier;
         nextLevelScoreMultiplier = 1;
+        
+        lives = baseLives; // 🌟 รีเซ็ตหัวใจให้เต็มโควต้าต้นทุน (รวมที่บวกถาวรมา) ทุกครั้งที่เริ่มด่านใหม่
 
         const bgIndex = Math.min(level - 1, levelBackgrounds.length - 1); container.style.background = levelBackgrounds[bgIndex]; 
         updateHUD(); startBGM();
@@ -573,7 +580,7 @@
         const reward = rewards[Math.floor(Math.random() * rewards.length)];
         
         if (reward.id === 1) nextLevelScoreMultiplier = 2;
-        if (reward.id === 2) lives++;
+        if (reward.id === 2) { baseLives++; lives = baseLives; } // 🌟 อัปเดตฐานหัวใจให้เยอะขึ้นถาวร
         if (reward.id === 3) tempLives++;
         if (reward.id === 4) peekCount++;
 
